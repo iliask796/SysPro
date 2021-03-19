@@ -1,30 +1,25 @@
-Greece 103 Influenza-C YES 24-5-1940
-Greece 61 H1N1 YES 29-2-2005
-Greece 86 Dhori-0 NO
-Greece 74 Mayaro YES 28-4-1959
-Italy 26 Dhori-0 NO
-Greece 50 H1N1 NO
-Germany 28 Salivirus NO
-Japan 51 Salivirus YES 12-2-2007
-Japan 47 Mayaro NO
-Italy 8 Salivirus NO
-Greece 82 Salivirus YES 11-2-1946
-UK 114 Influenza-C YES 9-9-1929
-USA 31 Influenza-C NO
-Japan 9 Influenza-C YES 1-7-2018
-Germany 86 H1N1 YES 5-8-2003
-UK 85 Salivirus YES 27-7-2007
-Greece 92 H1N1 YES 28-8-1969
-Korea 91 Mayaro NO
-UK 88 H1N1 YES 16-1-1967
-Germany 93 Dhori-0 YES 14-10-1928
-Japan 36 Salivirus NO
-Italy 91 H1N1 NO
-Germany 48 Salivirus YES 23-8-1974
-UK 117 Dhori-0 YES 23-8-1939
-Japan 41 Influenza-C YES 4-9-1991
-Korea 39 Dhori-0 NO
-UK 4 Salivirus YES 7-2-2019
-Germany 57 Influenza-C NO
-Greece 114 H1N1 NO
-Germany 79 Salivirus YES 13-7-1962
+6972 Izerpzcvicz Iketxrv UK 52 H1N1 NO
+6972 Libeuyp Pgiwugp USA 33 Mayaro NO
+2454 Blzosy Gamgwiik UK 78 Dhori-0 NO
+4495 Bixxdodws Wsdlybo Japan 30 Dhori-0 YES 30-12-1993
+1721 Ahact Pxrbibntje Greece 25 Mayaro YES 6-12-1999
+1721 Duh Utibbkpvz UK 117 Influenza-C NO
+5731 Ssewmm Uprsbd Greece 96 Mayaro NO
+5220 Lkom Labmwqwpmlo Japan 104 Dhori-0 NO
+4650 Jmretrnixvl Wvijyuwwg Italy 84 H1N1 NO
+1715 Eoeapduzmar Vzknvqjqzui Italy 56 Salivirus NO
+1297 Tatkaxzhsfc Tgbwempqxw USA 76 Salivirus YES 21-2-1965
+7991 Cuxasb Geopipz UK 34 Salivirus NO
+7900 Fovfbkjojk Ndttstkfv Italy 83 H1N1 YES 14-12-2001
+8782 Efohyzzzmyg Lghmjdbmle USA 7 Dhori-0 NO
+4495 Usva Bnaqtmqnzzmv UK 73 Salivirus YES 29-1-1988
+4495 Gfjsrpoaixdi Aylorlaa Japan 25 Salivirus YES 17-6-2013
+2564 Rzvkqav Pfhmwxk Italy 105 Dhori-0 YES 3-2-1949
+7930 Tikqmp Ewnrrwhpgp Korea 8 Influenza-C YES 18-9-2013
+1580 Xkugzy Igo Japan 109 Dhori-0 YES 29-10-1960
+581 Uxnnsqti Rwhhzmg Japan 61 Dhori-0 NO
+1414 Imv Vurhslygtfk Greece 104 Dhori-0 YES 19-3-1969
+5476 Kmczsgwi Iqowswfeddet USA 73 Dhori-0 YES 9-8-2010
+6394 Myl Yqc Italy 43 Influenza-C YES 27-8-1996
+2127 Rbqlw Vrzdibzelre Japan 62 Dhori-0 NO
+3103 Vfxln Uwxy UK 110 Dhori-0 YES 8-3-1984
