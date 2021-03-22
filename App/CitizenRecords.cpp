@@ -60,6 +60,17 @@ void RecordList::insertNode(Record* r1) {
     tmp->next = new_node;
 }
 
+bool RecordList::searchNode(int id) {
+    RecordNode* tmp = head;
+    while (tmp!=NULL){
+        if (tmp->info->getId() == id){
+            return true;
+        }
+        tmp = tmp->next;
+    }
+    return false;
+}
+
 void RecordList::print(){
     RecordNode* tmp = head;
     while (tmp!=NULL)
@@ -110,9 +121,15 @@ RecordTable::RecordTable(int cap) {
     table = new RecordList[size];
 }
 
-void RecordTable::insertElement(int key, Record* citizenInfo) {
+void RecordTable::insertElement(Record* citizenInfo) {
+    int key = citizenInfo->getId();
     unsigned long index = hash_i(int_to_charptr(key),0) % size;
     table[index].insertNode(citizenInfo);
+}
+
+bool RecordTable::searchElement(int id) {
+    unsigned long index = hash_i(int_to_charptr(id),0) % size;
+    return table[index].searchNode(id);
 }
 
 void RecordTable::displayTable() {

@@ -32,6 +32,7 @@ private:
 public:
     RecordList();
     void insertNode(Record*);
+    bool searchNode(int);
     void print();
     ~RecordList();
 };
@@ -42,7 +43,8 @@ private:
     RecordList* table;
 public:
     RecordTable(int);
-    void insertElement(int, Record*);
+    void insertElement(Record*);
+    bool searchElement(int);
     void displayTable();
     ~RecordTable();
 };

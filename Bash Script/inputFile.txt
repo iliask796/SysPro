@@ -1,25 +1,100 @@
-6972 Izerpzcvicz Iketxrv UK 52 H1N1 NO
-6972 Libeuyp Pgiwugp USA 33 Mayaro NO
-2454 Blzosy Gamgwiik UK 78 Dhori-0 NO
-4495 Bixxdodws Wsdlybo Japan 30 Dhori-0 YES 30-12-1993
-1721 Ahact Pxrbibntje Greece 25 Mayaro YES 6-12-1999
-1721 Duh Utibbkpvz UK 117 Influenza-C NO
-5731 Ssewmm Uprsbd Greece 96 Mayaro NO
-5220 Lkom Labmwqwpmlo Japan 104 Dhori-0 NO
-4650 Jmretrnixvl Wvijyuwwg Italy 84 H1N1 NO
-1715 Eoeapduzmar Vzknvqjqzui Italy 56 Salivirus NO
-1297 Tatkaxzhsfc Tgbwempqxw USA 76 Salivirus YES 21-2-1965
-7991 Cuxasb Geopipz UK 34 Salivirus NO
-7900 Fovfbkjojk Ndttstkfv Italy 83 H1N1 YES 14-12-2001
-8782 Efohyzzzmyg Lghmjdbmle USA 7 Dhori-0 NO
-4495 Usva Bnaqtmqnzzmv UK 73 Salivirus YES 29-1-1988
-4495 Gfjsrpoaixdi Aylorlaa Japan 25 Salivirus YES 17-6-2013
-2564 Rzvkqav Pfhmwxk Italy 105 Dhori-0 YES 3-2-1949
-7930 Tikqmp Ewnrrwhpgp Korea 8 Influenza-C YES 18-9-2013
-1580 Xkugzy Igo Japan 109 Dhori-0 YES 29-10-1960
-581 Uxnnsqti Rwhhzmg Japan 61 Dhori-0 NO
-1414 Imv Vurhslygtfk Greece 104 Dhori-0 YES 19-3-1969
-5476 Kmczsgwi Iqowswfeddet USA 73 Dhori-0 YES 9-8-2010
-6394 Myl Yqc Italy 43 Influenza-C YES 27-8-1996
-2127 Rbqlw Vrzdibzelre Japan 62 Dhori-0 NO
-3103 Vfxln Uwxy UK 110 Dhori-0 YES 8-3-1984
+5893 Yvlrlisgxmme Rfqlfkaxtb Greece 47 H1N1 YES 24-7-2006
+5893 Jamnnch Hepyp Greece 109 H1N1 YES 18-4-1923
+6753 Phyudidbdgck Uscdjrdbszrr UK 43 Influenza-C NO
+6753 Ugzzvmei Trzhgeixv UK 108 Influenza-C YES 9-4-1942
+2855 Nwkd Llupwywfe Italy 20 H1N1 NO
+8582 Ideunssds Vqhx Korea 35 H1N1 YES 15-4-2002
+6619 Jlnfmwh Vsjkzszuyace Germany 107 Influenza-C NO
+5660 Cvmxkqxobyl Qjqdgws USA 93 H1N1 NO
+8394 Peowniykahjs Quynllmsvan Korea 3 Dhori-0 YES 25-12-2018
+1107 Zor Omwqqvvd Korea 25 Influenza-C NO
+2362 Zhzgpvy Dzcds USA 102 Salivirus YES 11-9-2017
+1978 Ufnd Nkblyd USA 45 Dhori-0 NO
+9767 Ccalbjmrpaoe Wuvuiy UK 35 Salivirus YES 12-4-2020
+4263 Kqcak Vfvxchzhefmo Japan 97 Salivirus NO
+4814 Zxz Upzigfivz Germany 97 Mayaro YES 18-4-1999
+9231 Zaekqa Ugbrj Korea 34 H1N1 NO
+5451 Zylsdyiq Fguhijdxbvo Italy 26 Dhori-0 NO
+6583 Osxwwc Knbqyaa USA 10 Mayaro YES 25-3-2020
+68 Ldonhiwtelv Nzw UK 118 Dhori-0 YES 19-11-1932
+125 Eof Eolrngvmkdep UK 23 Mayaro NO
+8268 Pawryveyyjvl Pkiwhrfc USA 38 Salivirus NO
+4281 Blwoualx Bglfqh Germany 52 H1N1 YES 19-6-1992
+795 Ujftaclmhf Gqpsqxwcgmm USA 51 Dhori-0 YES 26-2-2000
+6240 Zlhrime Pofbprnuzawv Greece 72 Salivirus YES 26-6-1958
+108 Uwx Wngpohkg Greece 56 Salivirus YES 8-6-1994
+108 Ffg Jsmk Korea 60 Salivirus YES 29-8-1983
+5186 Apuidsak Zxmrqe Greece 93 Dhori-0 YES 26-4-2003
+640 Rvaljqi Fudiluoohh UK 100 Salivirus YES 12-2-1973
+4807 Bftspb Dulmebptgp Korea 67 Mayaro YES 28-11-2006
+729 Ezbnczmzd Erwmlb Japan 108 H1N1 YES 6-1-1993
+1558 Bxhliswigk Eghq Italy 91 H1N1 YES 25-10-1997
+7222 Ilzeqbvzdnm Oxxlgartnr Italy 54 Influenza-C YES 23-6-2005
+2426 Dfhxovrooz Zvovkbxaeu Italy 50 H1N1 YES 20-12-1972
+8001 Nxyyzisf Aavbnmmojrsd USA 4 Mayaro YES 21-2-2019
+3630 Nwtolmn Seqilufto Italy 84 Mayaro NO
+663 Jibxqtevhi Euujsgmk Greece 7 Dhori-0 NO
+4062 Nzsstcryo Hyup Italy 30 Dhori-0 NO
+1611 Zgmrqurslpud Hdqpa Germany 72 H1N1 YES 20-8-1969
+2516 Pglasqsnunns Frxlipn Greece 113 Dhori-0 NO
+738 Sbrrzn Hlmraf Japan 44 H1N1 NO
+7107 Bqdfzqb Lcdnirp USA 16 Mayaro YES 4-3-2008
+1041 Rwgop Qydycog Greece 93 Salivirus NO
+4186 Tslqr Kop Japan 63 Dhori-0 NO
+773 Hsgeveqhqj Yhgrhvebh USA 70 Dhori-0 NO
+5948 Owtq Dlsxh UK 118 Influenza-C YES 22-2-2016
+4889 Autxw Ylmabblc Italy 1 Influenza-C YES 13-1-2020
+8133 Vehaowkzz Szsmainsqgsp Japan 88 Influenza-C YES 9-12-1936
+3385 Aiqivqpgvnf Gyt UK 48 Mayaro NO
+8763 Ydcgdoh Emnyyrpusb Italy 92 Influenza-C YES 7-4-1972
+8354 Vcaktpxnj Tjknoctjq UK 98 Influenza-C NO
+4991 Envwtm Csnpfx Japan 13 Salivirus NO
+1853 Itsmtkmrybw Unl Korea 33 Salivirus NO
+2163 Jcmrmbxfk Mqo Italy 22 H1N1 NO
+2163 Lkzdkh Drx Germany 9 H1N1 NO
+693 Xfk Yuoxhtewx Greece 4 Dhori-0 YES 19-8-2018
+2324 Hwnczdklezf Ygatk Greece 94 Influenza-C NO
+5996 Xhs Rsrsnx Germany 92 Salivirus YES 11-5-1998
+5728 Hqp Axero Japan 111 Mayaro YES 19-11-1962
+5728 Vyjbbe Iac Italy 97 Mayaro NO
+5728 Mms Rqe Japan 96 Salivirus YES 6-5-1993
+3035 Oqnugi Waztzohuv UK 6 Mayaro NO
+646 Lhauddvc Yqzmf Greece 54 Dhori-0 NO
+7743 Isyyqejscmk Xgzrrkr Japan 111 H1N1 YES 4-7-1930
+4804 Rmhtckzqfgjp Hxzfnmlg Italy 18 Dhori-0 NO
+2667 Enarsldbl Mxwarih Italy 39 Mayaro NO
+3314 Nzob Ziwdkddmztwk Greece 61 H1N1 NO
+3871 Bottc Yhu USA 5 Influenza-C NO
+4216 Ifhfqnsongir Ttwusg Korea 96 H1N1 YES 10-2-1995
+4216 Okgvmxbhqe Lmb Korea 79 Mayaro NO
+5291 Jtphcuu Eiyvhjey Greece 12 Influenza-C YES 16-2-2017
+5291 Qdhclzcwy Zychsbtthy Japan 69 Influenza-C YES 3-11-1970
+3751 Whtgf Bzebvwjowm Japan 85 Mayaro YES 19-2-2016
+739 Xlks Aizfahqtip Germany 84 Influenza-C NO
+739 Xdjcgh Dexuy Italy 61 Dhori-0 YES 19-5-1981
+5214 Loddcvz Uhymz Korea 76 Salivirus YES 9-1-1991
+1171 Qmwybgswosts Muhzcpcahmsz UK 43 Mayaro YES 2-6-1989
+9957 Nuixnyq Mvpxv UK 69 Influenza-C YES 2-4-1958
+9957 Ftgzyiwzaas Kdnodd Japan 83 Influenza-C NO
+2970 Hwojakpgfo Uknlx Korea 23 Mayaro YES 11-9-2015
+3298 Jzkb Csxrmcw Greece 76 Salivirus YES 29-8-1978
+4375 Xmso Vmaxlllgnrv USA 109 Influenza-C YES 18-6-1970
+3084 Wdbbeeqwcwhd Tqhzvlzb Greece 25 Mayaro NO
+3084 Ugmqkvpt Xrazatyfce Greece 69 Dhori-0 YES 10-4-2013
+5938 Zfetaiszh Cpuggymhgpil Japan 61 Mayaro YES 10-1-2004
+2821 Ydhqz Zpzfhypglav Germany 61 Influenza-C NO
+543 Vzp Guvjoznvu Italy 48 Influenza-C NO
+1702 Egj Ytrygce Greece 49 H1N1 NO
+6864 Yyzphl Pprpdnklshuu Japan 56 Salivirus YES 18-12-1979
+6864 Insy Gthkvnqur Greece 60 Dhori-0 YES 25-1-2002
+6588 Tjgkxypq Jlogkbbtqlmu USA 13 Salivirus NO
+7170 Ggibt Scvpsxo Japan 60 Dhori-0 NO
+7407 Sdoibc Ifehp Greece 94 H1N1 NO
+6381 Ycnaw Mdlfrlssnue UK 35 Mayaro NO
+6712 Xeszcldvbvue Kifzfr UK 58 Salivirus NO
+5519 Iyrt Spwx UK 96 Salivirus YES 12-4-2015
+1293 Izwhfsfqrtt Hdgsmn UK 4 Salivirus NO
+1293 Thhtff Jbj Japan 60 Dhori-0 NO
+8219 Mkinxcuvv Vrepoz Japan 110 Influenza-C YES 5-1-1995
+8219 Cibdkmxyyqy Kolgdvtwupoe Greece 77 Salivirus NO
+3826 Rrhgninz Hwud USA 46 Influenza-C NO
