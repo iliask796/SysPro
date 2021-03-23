@@ -1,7 +1,7 @@
 #include <iostream>
 #include "CitizenRecords.h"
 
-Record::Record(int x, string nam, string co, int ag) {
+Record::Record(int x, string nam, string* co, int ag) {
     id = x;
     name = nam;
     country = co;
@@ -12,18 +12,17 @@ int Record::getId() const {
     return id;
 }
 
-const string &Record::getName() const {
+const string& Record::getName() const {
     return name;
 }
 
-const string &Record::getCountry() const {
+string* Record::getCountry() const {
     return country;
 }
 
 int Record::getAge() const {
     return age;
 }
-
 
 Record::~Record(){
 
@@ -69,6 +68,17 @@ bool RecordList::searchNode(int id) {
         tmp = tmp->next;
     }
     return false;
+}
+
+Record* RecordList::getNode(int id) {
+    RecordNode* tmp = head;
+    while (tmp!=NULL){
+        if (tmp->info->getId() == id){
+            return tmp->info;
+        }
+        tmp = tmp->next;
+    }
+    return NULL;
 }
 
 void RecordList::print(){
@@ -132,6 +142,11 @@ bool RecordTable::searchElement(int id) {
     return table[index].searchNode(id);
 }
 
+Record* RecordTable::getEntry(int id) {
+    unsigned long index = hash_i(int_to_charptr(id),0) % size;
+    return table[index].getNode(id);
+}
+
 void RecordTable::displayTable() {
     for (int i=0;i<size;i++){
         cout<<"List number "<<i+1<<" contains:"<<endl;
@@ -141,4 +156,65 @@ void RecordTable::displayTable() {
 
 RecordTable::~RecordTable() {
     delete[] table;
+}
+
+InfoNode::InfoNode(string s1) {
+    info = s1;
+    next = NULL;
+}
+
+InfoNode::~InfoNode() {
+
+}
+
+InfoList::InfoList() {
+    head = NULL;
+}
+
+void InfoList::insertNode(string s1) {
+    InfoNode* new_node = new InfoNode(s1);
+    if (head==NULL){
+        head = new_node;
+        return;
+    }
+    InfoNode* tmp = head;
+    while (tmp->next!=NULL)
+    {
+        tmp = tmp->next;
+    }
+    tmp->next = new_node;
+}
+
+string* InfoList::getInfo(string s1) {
+    InfoNode* tmp = head;
+    while (tmp!=NULL){
+        if (tmp->info.compare(s1)==0){
+            return &(tmp->info);
+        }
+        tmp = tmp->next;
+    }
+    return NULL;
+}
+
+void InfoList::displayList() {
+    InfoNode* tmp = head;
+    while (tmp!=NULL)
+    {
+        cout << "Test: " << tmp->info.data() << endl;
+        tmp = tmp->next;
+    }
+}
+
+InfoList::~InfoList() {
+    if (head==NULL){
+        return;
+    }
+    InfoNode* tmp = head->next;
+    while (tmp != NULL)
+    {
+        delete head;
+        head = tmp;
+        tmp = head->next;
+    }
+    delete head;
 }

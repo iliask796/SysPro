@@ -1,16 +1,16 @@
-#include "BloomFilter.h"
+#include "HashUtil.h"
 
 class Record{
 private:
     int id;
     string name;
-    string country;
+    string* country;
     int age;
 public:
-    Record(int,string,string,int);
+    Record(int,string,string*,int);
     int getId() const;
-    const string &getName() const;
-    const string &getCountry() const;
+    const string& getName() const;
+    string *getCountry() const;
     int getAge() const;
     ~Record();
 };
@@ -33,6 +33,7 @@ public:
     RecordList();
     void insertNode(Record*);
     bool searchNode(int);
+    Record* getNode(int);
     void print();
     ~RecordList();
 };
@@ -44,7 +45,31 @@ private:
 public:
     RecordTable(int);
     void insertElement(Record*);
+    //TODO Get with NULL instead of search
     bool searchElement(int);
+    Record* getEntry(int);
     void displayTable();
     ~RecordTable();
+};
+
+class InfoNode{
+private:
+    string info;
+    InfoNode* next;
+public:
+    InfoNode(string);
+    ~InfoNode();
+    friend class InfoList;
+};
+
+class InfoList{
+private:
+    InfoNode* head;
+public:
+    InfoList();
+    void insertNode(string);
+    string* getInfo(string);
+    void displayList();
+    ~InfoList();
+
 };

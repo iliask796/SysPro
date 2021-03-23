@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "CitizenRecords.h"
+#include "BloomFilter.h"
 using namespace std;
 
 int main() {
@@ -9,26 +10,31 @@ int main() {
     file.open(filename.c_str());
     string line;
     string data;
+    int start;
+    int end;
     int counter = 0;
     int id;
-    bool duplicate;
     string name;
     int age;
     string country;
     string virus;
     string isVaccinated;
     string date;
-    int start;
-    int end;
+    Record* currRecord;
+    bool faultyRecord;
     while(getline(file,line)){
         counter++;
     }
     file.close();
     file.open(filename.c_str());
-    RecordTable rt(counter/2);
+    InfoList countries;
+    InfoList virusNames;
+    RecordTable citizenData(counter);
+    BloomFilter citizenFilter(4000,3);
+    cout << "*** Reading Citizen Data ***" << endl;
     while(getline(file,line))
     {
-        duplicate = false;
+        faultyRecord = false;
         counter = 0;
         start = 0;
         end = line.find(' ');
@@ -37,9 +43,6 @@ int main() {
             switch (counter) {
                 case 0:
                     id = atoi(data.c_str());
-                    if (rt.searchElement(id)){
-                        duplicate = true;
-                    }
                     break;
                 case 1:
                     name = data;
@@ -49,36 +52,70 @@ int main() {
                     break;
                 case 3:
                     country = data;
+                    if (countries.getInfo(country)==NULL){
+                        countries.insertNode(country);
+                    }
                     break;
                 case 4:
                     age = atoi(data.c_str());
                     break;
                 case 5:
                     virus = data;
+                    if (virusNames.getInfo(virus)==NULL){
+                        virusNames.insertNode(virus);
+                    }
                     break;
                 case 6:
                     isVaccinated = data;
                     break;
             }
-            if (duplicate){
-                break;
-            }
             start = end + 1;
             end = line.find(' ',start);
             counter++;
         }
-        if (duplicate or isVaccinated == "NO"){
+        if (citizenData.searchElement(id)){
+            currRecord = citizenData.getEntry(id);
+            if (currRecord->getName() != name or currRecord->getCountry()->compare(country)!=0 or currRecord->getAge() != age){
+                faultyRecord = true;
+            }
+        }
+        if (isVaccinated == "NO" or faultyRecord){
             cout << "Error in Record: " << line << endl;
             continue;
         }
-        Record* r = new Record(id,name,country,age);
-        rt.insertElement(r);
         if (counter == 7 and isVaccinated == "YES"){
             data = line.substr(start,end-start);
             date = data;
         }
+        Record* r1 = new Record(id,name,countries.getInfo(country),age);
+        citizenData.insertElement(r1);
+        citizenFilter.addToFilter(int_to_charptr(id));
     }
-    rt.displayTable();
+    cout << "*** Data Successfully Inserted ***" << endl;
     file.close();
+    bool exit = false;
+    string selection;
+    int input;
+    while (!exit){
+        cout << "*** Waiting For Action ***" << endl;
+        cin >> selection;
+        if (selection == "/exit"){
+            exit = true;
+        }
+        else if (selection == "/print"){
+            citizenData.displayTable();
+        }
+        else if (selection == "/vaccineStatusBloom"){
+            cin >> input;
+            if (citizenFilter.probInFilter(int_to_charptr(input))){
+                cout << "MAYBE" << endl;
+            }
+            else{
+                cout << "NO" << endl;
+            }
+        }
+        cin.clear();
+        fflush(stdin);
+    }
     return 0;
 }
