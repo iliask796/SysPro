@@ -84,18 +84,18 @@ int main() {
             continue;
         }
         if (counter == 7 and isVaccinated == "YES"){
+            citizenFilters.addToFilter(virus,to_string(id));
             data = line.substr(start,end-start);
             date = data;
         }
         citizenData.insertElement(id,name,countries.getInfo(country),age);
-        citizenFilters.addToFilter(virus,int_to_charptr(id));
     }
     cout << "*** Data Successfully Inserted ***" << endl;
     file.close();
     bool exit = false;
     string selection;
     string input1;
-    int input2;
+    string input2;
     while (!exit){
         cout << "*** Waiting For Action ***" << endl;
         cin >> selection;
@@ -108,10 +108,10 @@ int main() {
         else if (selection == "/vaccineStatusBloom"){
             cin >> input1;
             cin >> input2;
-            if (citizenFilters.probInFilter(input1,int_to_charptr(input2))==1){
+            if (citizenFilters.probInFilter(input2,input1)){
                 cout << "MAYBE" << endl;
             }
-            else if (citizenFilters.probInFilter(input1,int_to_charptr(input2))==0){
+            else if (citizenFilters.probInFilter(input2,input1)){
                 cout << "NO" << endl;
             }
             else{

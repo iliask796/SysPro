@@ -134,17 +134,17 @@ RecordTable::RecordTable(int cap) {
 void RecordTable::insertElement(int id1, string nam, string* country1, int age1) {
     Record* citizenInfo = new Record(id1,nam,country1,age1);
     int key = citizenInfo->getId();
-    unsigned long index = hash_i(int_to_charptr(key),0) % size;
+    unsigned long index = hash_i(to_string(key),0) % size;
     table[index].insertNode(citizenInfo);
 }
 
 bool RecordTable::searchElement(int id) {
-    unsigned long index = hash_i(int_to_charptr(id),0) % size;
+    unsigned long index = hash_i(to_string(id),0) % size;
     return table[index].searchNode(id);
 }
 
 Record* RecordTable::getEntry(int id) {
-    unsigned long index = hash_i(int_to_charptr(id),0) % size;
+    unsigned long index = hash_i(to_string(id),0) % size;
     return table[index].getNode(id);
 }
 

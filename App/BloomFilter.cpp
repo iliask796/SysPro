@@ -10,22 +10,21 @@ BloomFilter::BloomFilter(int sizeInBytes, int no_hashes) {
     }
 }
 
-void BloomFilter::addToFilter(unsigned char* str) {
-    cout << "Test2: " << str << endl;
+void BloomFilter::addToFilter(string str) {
     unsigned long bit;
     for (int i=0;i<num_hashes;i++){
         bit = hash_i(str,i);
-        bit %= filterSize;
-        filter[bit/64] |= 1 << (bit%64);
+        bit %= filterSize * 32;
+        filter[bit/32] |= 1 << (bit%32);
     }
 }
 
-bool BloomFilter::probInFilter(unsigned char* str) {
+bool BloomFilter::probInFilter(string str) {
     unsigned long bit;
     for (int i=0;i<num_hashes;i++){
         bit= hash_i(str,i);
-        bit %= filterSize;
-        if ( (filter[bit/64] & (1 << (bit%64))) == 0 ) {
+        bit %= filterSize * 32;
+        if ( (filter[bit/32] & (1 << (bit%32))) == 0 ) {
             return false;
         }
     }
@@ -52,8 +51,7 @@ BloomList::BloomList(int size, int no_hashes) {
     head = NULL;
 }
 
-void BloomList::addToFilter(string virusName, unsigned char* str) {
-    cout<< "Test0: " << str << endl;
+void BloomList::addToFilter(string virusName, string str) {
     BloomNode* tmp = head;
     while (tmp!=NULL){
         if (tmp->virus == virusName){
@@ -63,14 +61,13 @@ void BloomList::addToFilter(string virusName, unsigned char* str) {
         tmp = tmp->next;
     }
     BloomNode* new_node = new BloomNode(virusName,filterSize,num_hashes);
-    cout << "Test1: " << new_node->virus << endl;
     new_node->filter->addToFilter(str);
     tmp = head;
     new_node->next = tmp;
     head = new_node;
 }
 
-int BloomList::probInFilter(string virusName, unsigned char* str) {
+int BloomList::probInFilter(string virusName, string str) {
     BloomNode* tmp = head;
     while (tmp!=NULL)
     {

@@ -7,8 +7,8 @@ private:
     int num_hashes;
 public:
     BloomFilter(int,int);
-    void addToFilter(unsigned char*);
-    bool probInFilter(unsigned char*);
+    void addToFilter(string);
+    bool probInFilter(string);
     ~BloomFilter();
 };
 
@@ -30,8 +30,8 @@ private:
     BloomNode* head;
 public:
     BloomList(int,int);
-    void addToFilter(string,unsigned char*);
-    int probInFilter(string,unsigned char*);
+    void addToFilter(string,string);
+    int probInFilter(string,string);
     ~BloomList();
 };
 
