@@ -108,10 +108,10 @@ int main() {
         else if (selection == "/vaccineStatusBloom"){
             cin >> input1;
             cin >> input2;
-            if (citizenFilters.probInFilter(input2,input1)){
+            if (citizenFilters.probInFilter(input2,input1) == 1){
                 cout << "MAYBE" << endl;
             }
-            else if (citizenFilters.probInFilter(input2,input1)){
+            else if (citizenFilters.probInFilter(input2,input1) == 0){
                 cout << "NO" << endl;
             }
             else{
