@@ -18,15 +18,21 @@ private:
     BloomFilter* filter;
     BloomNode* next;
 public:
-    BloomNode();
+    BloomNode(string,int,int);
     ~BloomNode();
     friend class BloomList;
 };
 
 class BloomList{
 private:
+    int filterSize;
+    int num_hashes;
     BloomNode* head;
 public:
-    BloomList();
+    BloomList(int,int);
+    void addToFilter(string,unsigned char*);
+    int probInFilter(string,unsigned char*);
     ~BloomList();
 };
+
+

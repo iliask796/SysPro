@@ -1,11 +1,11 @@
 #include <iostream>
 #include "CitizenRecords.h"
 
-Record::Record(int x, string nam, string* co, int ag) {
-    id = x;
+Record::Record(int id1, string nam, string* country1, int age1) {
+    id = id1;
     name = nam;
-    country = co;
-    age = ag;
+    country = country1;
+    age = age1;
 }
 
 int Record::getId() const {
@@ -34,11 +34,11 @@ RecordNode::RecordNode(Record* r1){
 }
 
 void RecordNode::displayStats(){
-    cout<<info->getId()<<" "<<info->getName()<<" "<<info->getCountry()<<" "<<info->getAge()<<endl;
+    cout<<info->getId()<<" "<<info->getName()<<" "<<*(info->getCountry())<<" "<<info->getAge()<<endl;
 }
 
 RecordNode::~RecordNode() {
-
+    delete info;
 }
 
 RecordList::RecordList() {
@@ -131,7 +131,8 @@ RecordTable::RecordTable(int cap) {
     table = new RecordList[size];
 }
 
-void RecordTable::insertElement(Record* citizenInfo) {
+void RecordTable::insertElement(int id1, string nam, string* country1, int age1) {
+    Record* citizenInfo = new Record(id1,nam,country1,age1);
     int key = citizenInfo->getId();
     unsigned long index = hash_i(int_to_charptr(key),0) % size;
     table[index].insertNode(citizenInfo);

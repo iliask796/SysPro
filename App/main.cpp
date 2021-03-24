@@ -30,7 +30,7 @@ int main() {
     InfoList countries;
     InfoList virusNames;
     RecordTable citizenData(counter);
-    BloomFilter citizenFilter(4000,3);
+    BloomList citizenFilters(4000,3);
     cout << "*** Reading Citizen Data ***" << endl;
     while(getline(file,line))
     {
@@ -87,15 +87,15 @@ int main() {
             data = line.substr(start,end-start);
             date = data;
         }
-        Record* r1 = new Record(id,name,countries.getInfo(country),age);
-        citizenData.insertElement(r1);
-        citizenFilter.addToFilter(int_to_charptr(id));
+        citizenData.insertElement(id,name,countries.getInfo(country),age);
+        citizenFilters.addToFilter(virus,int_to_charptr(id));
     }
     cout << "*** Data Successfully Inserted ***" << endl;
     file.close();
     bool exit = false;
     string selection;
-    int input;
+    string input1;
+    int input2;
     while (!exit){
         cout << "*** Waiting For Action ***" << endl;
         cin >> selection;
@@ -106,12 +106,16 @@ int main() {
             citizenData.displayTable();
         }
         else if (selection == "/vaccineStatusBloom"){
-            cin >> input;
-            if (citizenFilter.probInFilter(int_to_charptr(input))){
+            cin >> input1;
+            cin >> input2;
+            if (citizenFilters.probInFilter(input1,int_to_charptr(input2))==1){
                 cout << "MAYBE" << endl;
             }
-            else{
+            else if (citizenFilters.probInFilter(input1,int_to_charptr(input2))==0){
                 cout << "NO" << endl;
+            }
+            else{
+                cout << "Error: Virus Not Found!" << endl;
             }
         }
         cin.clear();
