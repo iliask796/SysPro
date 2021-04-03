@@ -67,7 +67,7 @@ void BloomList::addToFilter(string virusName, string str) {
     head = new_node;
 }
 
-int BloomList::probInFilter(string virusName, string str) {
+int BloomList::probInFilter(string str,string virusName) {
     BloomNode* tmp = head;
     while (tmp!=NULL)
     {
