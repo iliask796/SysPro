@@ -1,4 +1,4 @@
-# !/ bin / bash
+#!/bin/bash
 a=0
 FILENAME="inputFile.txt"
 if [ ! -f "$1" ] || [ ! -f "$2" ]
@@ -64,9 +64,9 @@ while [ "$a" -lt "$3" ]
 	length1=$(( ( RANDOM % 10 ) + 2 ))
 	length2=$(( ( RANDOM % 10 ) + 2 ))
 	fullname="$( tr -dc A-Z </dev/urandom | head -c 1 )$( tr -dc a-z </dev/urandom | head -c "$length1" ) $( tr -dc A-Z </dev/urandom | head -c 1 )$( tr -dc a-z </dev/urandom | head -c "$length2" )"
-	country=$(( RANDOM % "$countryNum" ))
+	country=$(( RANDOM % $countryNum ))
 	age=$(( ( RANDOM % 120 ) + 1 ))
-	virus=$(( RANDOM % "$virusNum" ))
+	virus=$(( RANDOM % $virusNum ))
 	vaccinated=$(( RANDOM % 2 ))
 	if [ "$vaccinated" -eq 0 ]
 	then
@@ -74,7 +74,7 @@ while [ "$a" -lt "$3" ]
 	else
 		day=$(( ( RANDOM % 30 ) + 1 ))
 		month=$(( ( RANDOM % 12 ) + 1 ))
-		year=$(( 2020 - ( RANDOM % "$age" ) ))
+		year=$(( 2020 - ( RANDOM % $age ) ))
 		echo "$id" "$fullname" "${countries[$country]}" "$age" "${viruses[$virus]}" "YES" "$day"-"$month"-"$year" >> inputFile.txt
 	fi
 	let "a = a + 1"

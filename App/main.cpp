@@ -5,31 +5,6 @@
 using namespace std;
 
 int main() {
-//    SkipList sl(3);
-//    sl.insert(12,"baba");
-//    sl.insert(20,"baba");
-//    sl.insert(4,"aaa");
-//    sl.insert(17,"baba");
-//    sl.insert(6,"baba");
-//    sl.insert(26,"baba");
-//    sl.insert(37,"baba");
-//    sl.insert(1,"baba");
-//    sl.insert(5,"baba");
-//    sl.insert(11,"baba");
-//    sl.insert(10,"baba");
-//    sl.insert(9,"baba");
-//    sl.display();
-//    sl.remove(1);
-//    sl.remove(4);
-//    sl.remove(6);
-//    sl.remove(9);
-//    sl.remove(10);
-//    sl.remove(17);
-//    sl.remove(26);
-//    sl.display();
-//    cout << sl.getDate(4) << endl;
-//    cout << sl.getDate(6) << endl;
-//    cout << sl.getDate(2) << endl;
     ifstream file;
     string filename = "D:\\SysPro\\Bash Script\\inputFile.txt";
     file.open(filename.c_str());
@@ -95,6 +70,8 @@ int main() {
                 case 6:
                     isVaccinated = data;
                     break;
+                default:
+                    break;
             }
             start = end + 1;
             end = line.find(' ',start);
@@ -102,7 +79,7 @@ int main() {
         }
         if (citizenData.searchElement(id)){
             currRecord = citizenData.getEntry(id);
-            if (currRecord->getName() != name or currRecord->getCountry()->compare(country)!=0 or currRecord->getAge() != age){
+            if (currRecord->getName() != name or *currRecord->getCountry()!=country or currRecord->getAge() != age){
                 faultyRecord = true;
             }
         }
@@ -130,14 +107,22 @@ int main() {
     string selection;
     string input1;
     string input2;
+    cout << "*** Type /help for available commands ***" << endl;
     while (!exit){
         cout << "*** Waiting For Action ***" << endl;
         cin >> selection;
         if (selection == "/exit"){
             exit = true;
         }
-        else if (selection == "/print"){
-            citizenData.displayTable();
+        else if (selection == "/help"){
+            cout << "*** Listing available commands *** " << endl;
+            cout << "/vaccineStatusBloom citizenID virusName" << endl << "/vaccineStatus citizenID virusName" << endl;
+            cout << "/vaccineStatus citizenID" << endl << "/populationStatus [country] virusName date1 date2" << endl;
+            cout << "/popStatusByAge [country] virusName date1 date2" << endl;
+            cout << "/insertCitizenRecord citizenID firstName lastName country age virusName YES/NO [date]" << endl;
+            cout << "/vaccinateNow citizenID firstName lastName country age virusName" << endl;
+            cout << "/list-nonVaccinated-Persons virusName" << endl << "/exit" << endl;
+            cout << "Caution: ID -> only numbers, date_format: 4-7-2020 and anything in [] -> optional" << endl;
         }
         else if (selection == "/vaccineStatusBloom"){
             cin >> input1;
@@ -152,8 +137,14 @@ int main() {
                 cout << "Error: Virus Not Found!" << endl;
             }
         }
-        else if (selection == "test"){
+        else if (selection == "/print"){
+            citizenData.displayTable();
+        }
+        else if (selection == "/test"){
             citizenVaccines.display();
+            cout << "Test1: " << citizenVaccines.isNotVaccinated("H1N1",5660)<<endl;
+            cout << "Test2: " << citizenVaccines.isNotVaccinated("H1N1",142)<<endl;
+            cout << "Test3: " << citizenVaccines.isNotVaccinated("H1N11",5660)<<endl;
         }
         cin.clear();
         fflush(stdin);

@@ -20,6 +20,7 @@ public:
     SkipList(int);
     void insert(Record*,const string&);
     string getDate(int);
+    bool inList(int);
     void remove(int);
     void display();
     ~SkipList();
@@ -44,8 +45,9 @@ private:
 public:
     VirusSkipList(int);
     void insert(const string&,const string&,Record*,const string&);
-    string getDate();
-    void remove();
+    string getDate(const string&,int);
+    int isNotVaccinated(const string&,int);
+//    void remove(const string&,const string&,int);
     void display();
     ~VirusSkipList();
 };

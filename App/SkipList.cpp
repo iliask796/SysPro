@@ -80,6 +80,23 @@ string SkipList::getDate(int id1) {
     }
 }
 
+bool SkipList::inList(int id1) {
+    SkipListNode* tmp = head;
+    int i=currentLevel;
+    while (i>=0){
+        while (tmp->next[i] != NULL and tmp->next[i]->data->getId() < id1){
+            tmp = tmp->next[i];
+        }
+        i--;
+    }
+    if (tmp->next[++i] != NULL and tmp->next[i]->data->getId() == id1){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
 void SkipList::remove(int id1) {
     SkipListNode* tmp = head;
     //create an array and store the addresses of the previous nodes of each level
@@ -175,6 +192,33 @@ void VirusSkipList::insert(const string& virus1, const string& result, Record* d
     tmp = head;
     new_node1->next = tmp;
     head = new_node;
+}
+
+string VirusSkipList::getDate(const string& virus1, int date1) {
+    VirusSkipListNode* tmp = head;
+    while (tmp!=NULL){
+        if (tmp->isVaccinated=="YES" and tmp->virus==virus1){
+            return tmp->sList->getDate(date1);
+        }
+        tmp = tmp->next;
+    }
+    return "-1";
+}
+
+int VirusSkipList::isNotVaccinated(const string& virus1, int id1) {
+    VirusSkipListNode* tmp = head;
+    while (tmp!=NULL) {
+        if (tmp->isVaccinated == "NO" and tmp->virus == virus1) {
+            if (tmp->sList->inList(id1)==true){
+                return 1;
+            }
+            else{
+                return 0;
+            }
+        }
+        tmp = tmp->next;
+    }
+    return -1;
 }
 
 void VirusSkipList::display() {
