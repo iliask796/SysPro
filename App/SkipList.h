@@ -29,21 +29,23 @@ class VirusSkipListNode{
 private:
     string virus;
     string isVaccinated;
-    SkipList sList;
+    SkipList* sList;
     VirusSkipListNode* next;
 public:
-    VirusSkipListNode();
+    VirusSkipListNode(const string&,const string&,int);
     ~VirusSkipListNode();
     friend class VirusSkipList;
 };
 
 class VirusSkipList{
 private:
+    int levels;
     VirusSkipListNode* head;
 public:
-    VirusSkipList();
-    void insert();
+    VirusSkipList(int);
+    void insert(const string&,const string&,Record*,const string&);
     string getDate();
     void remove();
+    void display();
     ~VirusSkipList();
 };

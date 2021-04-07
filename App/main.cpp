@@ -56,10 +56,11 @@ int main() {
     InfoList virusNames;
     RecordTable citizenData(counter);
     BloomList citizenFilters(4000,3);
-    SkipList citizenVaccine(3);
+    VirusSkipList citizenVaccines(3);
     cout << "*** Reading Citizen Data ***" << endl;
     while(getline(file,line))
     {
+        isVaccinated = "";
         faultyRecord = false;
         counter = 0;
         start = 0;
@@ -109,13 +110,19 @@ int main() {
             cout << "Error in Record: " << line << endl;
             continue;
         }
+        if (counter == 6){
+            data = line.substr(start,end-start);
+            if (data == "NO"){
+                isVaccinated = data;
+            }
+        }
         if (counter == 7 and isVaccinated == "YES"){
             citizenFilters.addToFilter(virus,to_string(id));
             data = line.substr(start,end-start);
             date = data;
         }
         currRecord = citizenData.insertElement(id,name,countries.getInfo(country),age);
-        citizenVaccine.insert(currRecord,date);
+        citizenVaccines.insert(virus,isVaccinated,currRecord,date);
     }
     cout << "*** Data Successfully Inserted ***" << endl;
     file.close();
@@ -146,9 +153,7 @@ int main() {
             }
         }
         else if (selection == "test"){
-            citizenVaccine.display();
-            citizenVaccine.remove(68);
-            cout << citizenVaccine.getDate(68) << endl;
+            citizenVaccines.display();
         }
         cin.clear();
         fflush(stdin);

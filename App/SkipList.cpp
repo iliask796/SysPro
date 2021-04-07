@@ -104,7 +104,7 @@ void SkipList::remove(int id1) {
             }
             NodesArray[i]->next[i] = tmp->next[i];
         }
-        //TODO: delete node
+        delete tmp;
     }
     //reduce empty levels
     while (head->next[currentLevel] == NULL and  currentLevel > 0){
@@ -133,6 +133,71 @@ SkipList::~SkipList() {
             head = tmp;
             tmp = head->next[0];
         }
+    }
+    delete head;
+}
+
+VirusSkipListNode::VirusSkipListNode(const string& virus1, const string& result, int levels) {
+    virus=virus1;
+    isVaccinated=result;
+    sList = new SkipList(levels);
+    next = NULL;
+}
+
+VirusSkipListNode::~VirusSkipListNode() {
+    delete sList;
+}
+
+VirusSkipList::VirusSkipList(int levels1) {
+    levels = levels1;
+    head = NULL;
+}
+
+void VirusSkipList::insert(const string& virus1, const string& result, Record* data1, const string& date1) {
+    VirusSkipListNode* tmp = head;
+    while (tmp!=NULL){
+        if (tmp->isVaccinated==result and tmp->virus==virus1){
+            tmp->sList->insert(data1,date1);
+            return;
+        }
+        tmp = tmp->next;
+    }
+    VirusSkipListNode* new_node = new VirusSkipListNode(virus1,result,levels);
+    new_node->sList->insert(data1,date1);
+    VirusSkipListNode* new_node1;
+    if (result == "YES"){
+        new_node1 = new VirusSkipListNode(virus1,"NO",levels);
+    }
+    else{
+        new_node1 = new VirusSkipListNode(virus1,"YES",levels);
+    }
+    new_node->next = new_node1;
+    tmp = head;
+    new_node1->next = tmp;
+    head = new_node;
+}
+
+void VirusSkipList::display() {
+    if (head!=NULL){
+        VirusSkipListNode* tmp = head;
+        while (tmp!=NULL){
+            cout << "Printing: "<< tmp->virus << " + " << tmp->isVaccinated << endl;
+            tmp->sList->display();
+            tmp=tmp->next;
+        }
+    }
+}
+
+VirusSkipList::~VirusSkipList() {
+    if (head==NULL){
+        return;
+    }
+    VirusSkipListNode* tmp = head->next;
+    while (tmp != NULL)
+    {
+        delete head;
+        head = tmp;
+        tmp = head->next;
     }
     delete head;
 }
