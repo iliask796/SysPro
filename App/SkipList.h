@@ -1,13 +1,12 @@
-#include <string>
-using namespace std;
+#include "CitizenRecords.h"
 
 class SkipListNode{
 private:
-    int id;
+    Record* data;
     string date;
     SkipListNode** next;
 public:
-    SkipListNode(int,const string&,int);
+    SkipListNode(Record*,const string&,int);
     ~SkipListNode();
     friend class SkipList;
 };
@@ -19,7 +18,7 @@ private:
     SkipListNode* head;
 public:
     SkipList(int);
-    void insert(int,const string&);
+    void insert(Record*,const string&);
     string getDate(int);
     void remove(int);
     void display();

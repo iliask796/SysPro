@@ -131,11 +131,12 @@ RecordTable::RecordTable(int cap) {
     table = new RecordList[size];
 }
 
-void RecordTable::insertElement(int id1, string nam, string* country1, int age1) {
+Record* RecordTable::insertElement(int id1, string nam, string* country1, int age1) {
     Record* citizenInfo = new Record(id1,nam,country1,age1);
     int key = citizenInfo->getId();
     unsigned long index = hash_i(to_string(key),0) % size;
     table[index].insertNode(citizenInfo);
+    return citizenInfo;
 }
 
 bool RecordTable::searchElement(int id) {

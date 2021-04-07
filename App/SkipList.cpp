@@ -3,8 +3,8 @@
 #include <ctime>
 #include <stdlib.h>
 
-SkipListNode::SkipListNode(int id1, const string& date1, int level) {
-    id = id1;
+SkipListNode::SkipListNode(Record* record, const string& date1, int level) {
+    data = record;
     date = date1;
     next = new SkipListNode*[level+1];
     for (int i=0;i<=level;i++){
@@ -19,11 +19,11 @@ SkipListNode::~SkipListNode() {
 SkipList::SkipList(int levels) {
     currentLevel = 0;
     maxLevel = --levels;
-    head = new SkipListNode(-9999,"-1",maxLevel);
+    head = new SkipListNode(NULL,"-1",maxLevel);
     srand(time(NULL));
 }
 
-void SkipList::insert(int id1,const string& date1) {
+void SkipList::insert(Record* data1,const string& date1) {
     SkipListNode* tmp = head;
     //create an array and store the addresses of the previous nodes of each level
     SkipListNode* NodesArray[maxLevel+1];
@@ -33,12 +33,12 @@ void SkipList::insert(int id1,const string& date1) {
     }
     i = currentLevel;
     while (i>=0){
-        while (tmp->next[i] != NULL and tmp->next[i]->id < id1){
+        while (tmp->next[i] != NULL and tmp->next[i]->data->getId() < data1->getId()){
             tmp = tmp->next[i];
         }
         NodesArray[i--]=tmp;
     }
-    if (tmp->next[++i] == NULL or tmp->next[i]->id != id1){
+    if (tmp->next[++i] == NULL or tmp->next[i]->data->getId() != data1->getId()){
         //determine the levels of the new node
         int nodeLevel = 0;
         int coin = rand() % 2 + 1;
@@ -55,7 +55,7 @@ void SkipList::insert(int id1,const string& date1) {
             currentLevel = nodeLevel;
         }
         //create and insert the new node
-        SkipListNode* new_node = new SkipListNode(id1,date1,nodeLevel);
+        SkipListNode* new_node = new SkipListNode(data1,date1,nodeLevel);
         for (i=0;i<=nodeLevel;i++){
             new_node->next[i] = NodesArray[i]->next[i];
             NodesArray[i]->next[i] = new_node;
@@ -67,12 +67,12 @@ string SkipList::getDate(int id1) {
     SkipListNode* tmp = head;
     int i=currentLevel;
     while (i>=0){
-        while (tmp->next[i] != NULL and tmp->next[i]->id < id1){
+        while (tmp->next[i] != NULL and tmp->next[i]->data->getId() < id1){
             tmp = tmp->next[i];
         }
         i--;
     }
-    if (tmp->next[++i] != NULL and tmp->next[i]->id == id1){
+    if (tmp->next[++i] != NULL and tmp->next[i]->data->getId() == id1){
         return tmp->next[i]->date;
     }
     else{
@@ -90,14 +90,14 @@ void SkipList::remove(int id1) {
     }
     i = currentLevel;
     while (i >= 0){
-        while (tmp->next[i] != NULL and tmp->next[i]->id < id1){
+        while (tmp->next[i] != NULL and tmp->next[i]->data->getId() < id1){
             tmp = tmp->next[i];
         }
         NodesArray[i--] = tmp;
     }
     //connect required previous nodes with the ones after the node we remove
     tmp = tmp->next[0];
-    if (tmp != NULL and tmp->id == id1){
+    if (tmp != NULL and tmp->data->getId() == id1){
         while (++i <= currentLevel){
             if (NodesArray[i]->next[i] != tmp){
                 break;
@@ -118,7 +118,7 @@ void SkipList::display() {
         SkipListNode* tmp = head->next[i];
         cout << "Level " << i << ": ";
         while (tmp != NULL){
-            cout << tmp->id << " ";
+            cout << tmp->data->getId() << " ";
             tmp = tmp->next[i];
         }
         cout << endl;

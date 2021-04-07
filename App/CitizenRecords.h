@@ -44,7 +44,7 @@ private:
     RecordList* table;
 public:
     RecordTable(int);
-    void insertElement(int,string,string*,int);
+    Record* insertElement(int,string,string*,int);
     //TODO Get with NULL instead of search
     bool searchElement(int);
     Record* getEntry(int);
