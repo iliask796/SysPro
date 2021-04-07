@@ -9,7 +9,7 @@ int main() {
     SkipList sl(3);
     sl.insert(12,"baba");
     sl.insert(20,"baba");
-    sl.insert(4,"baba");
+    sl.insert(4,"aaa");
     sl.insert(17,"baba");
     sl.insert(6,"baba");
     sl.insert(26,"baba");
@@ -20,6 +20,17 @@ int main() {
     sl.insert(10,"baba");
     sl.insert(9,"baba");
     sl.display();
+    sl.remove(1);
+    sl.remove(4);
+    sl.remove(6);
+    sl.remove(9);
+    sl.remove(10);
+    sl.remove(17);
+    sl.remove(26);
+    sl.display();
+//    cout << sl.getDate(4) << endl;
+//    cout << sl.getDate(6) << endl;
+//    cout << sl.getDate(2) << endl;
 //    ifstream file;
 //    string filename = "D:\\SysPro\\Bash Script\\inputFile.txt";
 //    file.open(filename.c_str());
