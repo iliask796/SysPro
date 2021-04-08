@@ -3,12 +3,13 @@
 #include "BloomFilter.h"
 #include "SkipList.h"
 #include "InputHandler.h"
-#include <time.h>
+#include <ctime>
 using namespace std;
 
-int main() {
+int main(int argc, char *argv[]) {
     ifstream file;
-    string filename = "../../Bash_Script/inputFile.txt";
+    string filenameExtension = argv[2];
+    string filename = "../../Bash_Script/"+filenameExtension;
     file.open(filename.c_str());
     string line;
     string data;
@@ -21,7 +22,7 @@ int main() {
     string country;
     string virus;
     string isVaccinated;
-    string today;
+    string date;
     Record* currRecord;
     bool faultyRecord;
     while(getline(file,line)){
@@ -32,7 +33,8 @@ int main() {
     InfoList countries;
     InfoList virusNames;
     RecordTable citizenData(counter);
-    BloomList citizenFilters(4000,3);
+    int bloomSize = atoi(argv[4]);
+    BloomList citizenFilters(bloomSize,3);
     VirusSkipList citizenVaccines(3);
     cout << "*** Reading Citizen Data ***" << endl;
     while(getline(file,line))
@@ -93,19 +95,19 @@ int main() {
             data = line.substr(start,end-start);
             if (data == "NO"){
                 isVaccinated = data;
-                today = "0-0-0000";
+                date = "0-0-0000";
             }
         }
         if (counter == 7 and isVaccinated == "YES"){
             citizenFilters.addToFilter(virus,to_string(id));
             data = line.substr(start,end-start);
-            today = data;
+            date = data;
         }
         if (currRecord == NULL){
             currRecord = citizenData.insertElement(id,name,countries.getInfo(country),age);
         }
         if (citizenVaccines.getVaccinateInfo(currRecord->getId(),virus) == "-1"){
-            citizenVaccines.insert(virus,isVaccinated,currRecord,today);
+            citizenVaccines.insert(virus, isVaccinated, currRecord, date);
         }
         else {
             cout << "Error in Record: " << line << endl;
@@ -131,10 +133,10 @@ int main() {
             cout << "/vaccineStatusBloom citizenID virusName" << endl << "/vaccineStatus citizenID virusName" << endl;
             cout << "/vaccineStatus citizenID" << endl << "/populationStatus [country] virusName date1 date2" << endl;
             cout << "/popStatusByAge [country] virusName date1 date2" << endl;
-            cout << "/insertCitizenRecord citizenID firstName lastName country age virusName YES/NO [today]" << endl;
+            cout << "/insertCitizenRecord citizenID firstName lastName country age virusName YES/NO [date]" << endl;
             cout << "/vaccinateNow citizenID firstName lastName country age virusName" << endl;
             cout << "/list-nonVaccinated-Persons virusName" << endl << "/exit" << endl;
-            cout << "Caution: ID -> only numbers, date_format: 4-7-2020 and anything in [] -> optional" << endl;
+            cout << "Caution: ID,Age -> only numbers, date_format: 4-7-2020 and anything in [] -> optional" << endl;
         }
         else if (cmdi.getWord(0) == "/vaccineStatusBloom"){
             if (cmdi.getCount()!=3){
@@ -194,7 +196,11 @@ int main() {
                     continue;
                 }
                 if (cmdi.getWord(7) == "NO" and !cmdi.getWord(8).empty()){
-                    cout << "Error: Record with NO cannot have a today." << endl;
+                    cout << "Error: Record with NO cannot have a date." << endl;
+                    continue;
+                }
+                if (cmdi.getWord(7) == "YES" and cmdi.getWord(8).empty()){
+                    cout << "Error: Record with YES must have a date." << endl;
                     continue;
                 }
                 currRecord = citizenData.getEntry(atoi(cmdi.getWord(1).c_str()));
@@ -206,9 +212,6 @@ int main() {
                 }
                 else{
                     currRecord = citizenData.insertElement(atoi(cmdi.getWord(1).c_str()),cmdi.getWord(2)+" "+cmdi.getWord(3),countries.getInfo(cmdi.getWord(4)),atoi(cmdi.getWord(5).c_str()));
-                }
-                if (cmdi.getWord(7) == "YES"){
-                    citizenFilters.addToFilter(cmdi.getWord(6),cmdi.getWord(1));
                 }
                 result = citizenVaccines.getVaccinateInfo(currRecord->getId(),cmdi.getWord(6));
                 if (result == "-1"){
@@ -225,6 +228,16 @@ int main() {
                 }
                 else{
                     cout << "Error: CITIZEN " << currRecord->getId() << " ALREADY VACCINATED ON " << result << endl;
+                    continue;
+                }
+                if (cmdi.getWord(7) == "YES"){
+                    citizenFilters.addToFilter(cmdi.getWord(6),cmdi.getWord(1));
+                }
+                if (countries.getInfo(cmdi.getWord(4))==NULL){
+                    countries.insertNode(cmdi.getWord(4));
+                }
+                if (virusNames.getInfo(cmdi.getWord(6))==NULL){
+                    virusNames.insertNode(cmdi.getWord(6));
                 }
             }
             else{
@@ -233,10 +246,48 @@ int main() {
             }
         }
         else if (cmdi.getWord(0) == "/vaccinateNow"){
-            time_t currentTime = time(NULL);
-            tm* currentTimePointer = localtime(&currentTime);
-            string today = to_string(currentTimePointer->tm_mday) + "-" + to_string(currentTimePointer->tm_mon + 1) + "-" + to_string(currentTimePointer->tm_year + 1900);
-            cout << today << endl;
+            if (cmdi.getCount() == 7){
+                if ((cmdi.isDigit(1))==false or cmdi.isDigit(5)==false){
+                    cout << "Error: Wrong ID or Age format. Only numbers allowed." << endl;
+                    continue;
+                }
+                currRecord = citizenData.getEntry(atoi(cmdi.getWord(1).c_str()));
+                if (currRecord != NULL){
+                    if (currRecord->getName() != cmdi.getWord(2)+" "+cmdi.getWord(3) or *currRecord->getCountry()!=cmdi.getWord(4) or currRecord->getAge() != atoi(cmdi.getWord(5).c_str())){
+                        cout << "Error: Information Mismatch between Existing Record with given ID and the rest Information." << endl;
+                        continue;
+                    }
+                }
+                else{
+                    currRecord = citizenData.insertElement(atoi(cmdi.getWord(1).c_str()),cmdi.getWord(2)+" "+cmdi.getWord(3),countries.getInfo(cmdi.getWord(4)),atoi(cmdi.getWord(5).c_str()));
+                }
+                result = citizenVaccines.getVaccinateInfo(currRecord->getId(),cmdi.getWord(6));
+                time_t currentTime = time(NULL);
+                tm* currentTimePointer = localtime(&currentTime);
+                string today = to_string(currentTimePointer->tm_mday) + "-" + to_string(currentTimePointer->tm_mon + 1) + "-" + to_string(currentTimePointer->tm_year + 1900);
+                if (result == "-1"){
+                    citizenVaccines.insert(cmdi.getWord(6),"YES",currRecord,today);
+                }
+                else if (result == "NO"){
+                    citizenVaccines.remove(cmdi.getWord(6),"NO",currRecord->getId());
+                    citizenVaccines.insert(cmdi.getWord(6),"YES",currRecord,today);
+                }
+                else{
+                    cout << "Error: CITIZEN " << currRecord->getId() << " ALREADY VACCINATED ON " << result << endl;
+                    continue;
+                }
+                if (countries.getInfo(cmdi.getWord(4))==NULL){
+                    countries.insertNode(cmdi.getWord(4));
+                }
+                if (virusNames.getInfo(cmdi.getWord(6))==NULL){
+                    virusNames.insertNode(cmdi.getWord(6));
+                }
+                citizenFilters.addToFilter(cmdi.getWord(6),cmdi.getWord(1));
+            }
+            else{
+                cout << "Error: Arguments Mismatch. Type /help for more info." << endl;
+                continue;
+            }
         }
         else if (cmdi.getWord(0) == "/list-nonVaccinated-Persons"){
             if (cmdi.getCount()!=2){
@@ -248,12 +299,6 @@ int main() {
                 continue;
             }
             citizenVaccines.displayNonVaccinated(cmdi.getWord(1));
-        }
-        else if (cmdi.getWord(0) == "/print"){
-            citizenData.displayTable();
-        }
-        else if (cmdi.getWord(0) == "/test"){
-            citizenVaccines.display();
         }
         cin.clear();
         fflush(stdin);

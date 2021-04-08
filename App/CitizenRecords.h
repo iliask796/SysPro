@@ -21,7 +21,6 @@ private:
     RecordNode* next;
 public:
     RecordNode(Record*);
-    void displayStats();
     ~RecordNode();
     friend class RecordList;
 };
@@ -32,9 +31,7 @@ private:
 public:
     RecordList();
     void insertNode(Record*);
-    bool searchNode(int);
     Record* getNode(int);
-    void print();
     ~RecordList();
 };
 
@@ -46,7 +43,6 @@ public:
     RecordTable(int);
     Record* insertElement(int,string,string*,int);
     Record* getEntry(int);
-    void displayTable();
     ~RecordTable();
 };
 
@@ -67,7 +63,5 @@ public:
     InfoList();
     void insertNode(string);
     string* getInfo(string);
-    void displayList();
     ~InfoList();
-
 };

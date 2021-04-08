@@ -140,19 +140,6 @@ void SkipList::displayInfo() {
     }
 }
 
-void SkipList::display1() {
-    cout << "Printing Skip List:" << endl;
-    for (int i=0;i<=currentLevel;i++){
-        SkipListNode* tmp = head->next[i];
-        cout << "Level " << i << ": ";
-        while (tmp != NULL){
-            cout << tmp->data->getId() << " ";
-            tmp = tmp->next[i];
-        }
-        cout << endl;
-    }
-}
-
 SkipList::~SkipList() {
     if (head->next[0]!=NULL){
         SkipListNode* tmp = head->next[0];
@@ -217,17 +204,6 @@ void VirusSkipList::remove(const string& virus1, const string& result, int id1) 
     }
 }
 
-string VirusSkipList::getDate(const string& virus1, int date1) {
-    VirusSkipListNode* tmp = head;
-    while (tmp!=NULL){
-        if (tmp->isVaccinated=="YES" and tmp->virus==virus1){
-            return tmp->sList->getDate(date1);
-        }
-        tmp = tmp->next;
-    }
-    return "-1";
-}
-
 string VirusSkipList::getVaccinateInfo(int id1, const string& virus1) {
     VirusSkipListNode* tmp = head;
     string date1;
@@ -278,17 +254,6 @@ void VirusSkipList::displayNonVaccinated(const string& virus1) {
             tmp->sList->displayInfo();
         }
         tmp = tmp->next;
-    }
-}
-
-void VirusSkipList::display() {
-    if (head!=NULL){
-        VirusSkipListNode* tmp = head;
-        while (tmp!=NULL){
-            cout << "Printing: "<< tmp->virus << " + " << tmp->isVaccinated << endl;
-            tmp->sList->display1();
-            tmp=tmp->next;
-        }
     }
 }
 

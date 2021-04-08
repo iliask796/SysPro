@@ -54,15 +54,6 @@ int CommandInput::getCount() {
     return i;
 }
 
-void CommandInput::display(){
-    for (int i=0;i<size;i++){
-        if (wordArray[i].empty()){
-            return;
-        }
-        cout << wordArray[i] << endl;
-    }
-}
-
 CommandInput::~CommandInput() {
     delete[] wordArray;
 }

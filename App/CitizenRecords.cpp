@@ -33,10 +33,6 @@ RecordNode::RecordNode(Record* r1){
     next = NULL;
 }
 
-void RecordNode::displayStats(){
-    cout<<info->getId()<<" "<<info->getName()<<" "<<*(info->getCountry())<<" "<<info->getAge()<<endl;
-}
-
 RecordNode::~RecordNode() {
     delete info;
 }
@@ -59,17 +55,6 @@ void RecordList::insertNode(Record* r1) {
     tmp->next = new_node;
 }
 
-bool RecordList::searchNode(int id) {
-    RecordNode* tmp = head;
-    while (tmp!=NULL){
-        if (tmp->info->getId() == id){
-            return true;
-        }
-        tmp = tmp->next;
-    }
-    return false;
-}
-
 Record* RecordList::getNode(int id) {
     RecordNode* tmp = head;
     while (tmp!=NULL){
@@ -79,15 +64,6 @@ Record* RecordList::getNode(int id) {
         tmp = tmp->next;
     }
     return NULL;
-}
-
-void RecordList::print(){
-    RecordNode* tmp = head;
-    while (tmp!=NULL)
-    {
-        tmp->displayStats();
-        tmp = tmp->next;
-    }
 }
 
 RecordList::~RecordList() {
@@ -144,13 +120,6 @@ Record* RecordTable::getEntry(int id) {
     return table[index].getNode(id);
 }
 
-void RecordTable::displayTable() {
-    for (int i=0;i<size;i++){
-        cout<<"List number "<<i+1<<" contains:"<<endl;
-        table[i].print();
-    }
-}
-
 RecordTable::~RecordTable() {
     delete[] table;
 }
@@ -191,15 +160,6 @@ string* InfoList::getInfo(string s1) {
         tmp = tmp->next;
     }
     return NULL;
-}
-
-void InfoList::displayList() {
-    InfoNode* tmp = head;
-    while (tmp!=NULL)
-    {
-        cout << "Test: " << tmp->info.data() << endl;
-        tmp = tmp->next;
-    }
 }
 
 InfoList::~InfoList() {

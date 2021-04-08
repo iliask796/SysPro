@@ -12,6 +12,5 @@ public:
     bool isDigit(int);
     void clear();
     int getCount();
-    void display();
     ~CommandInput();
 };
