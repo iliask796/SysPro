@@ -206,7 +206,9 @@ int main() {
                 else{
                     currRecord = citizenData.insertElement(atoi(cmdi.getWord(1).c_str()),cmdi.getWord(2)+" "+cmdi.getWord(3),countries.getInfo(cmdi.getWord(4)),atoi(cmdi.getWord(5).c_str()));
                 }
-                citizenFilters.addToFilter(cmdi.getWord(6),cmdi.getWord(1));
+                if (cmdi.getWord(7) == "YES"){
+                    citizenFilters.addToFilter(cmdi.getWord(6),cmdi.getWord(1));
+                }
                 result = citizenVaccines.getVaccinateInfo(currRecord->getId(),cmdi.getWord(6));
                 if (result == "-1"){
                     if (cmdi.getWord(7)=="NO"){
