@@ -216,20 +216,47 @@ string VirusSkipList::getDate(const string& virus1, int date1) {
     return "-1";
 }
 
-int VirusSkipList::isNotVaccinated(const string& virus1, int id1) {
+string VirusSkipList::getVaccinateInfo(int id1, const string& virus1) {
     VirusSkipListNode* tmp = head;
+    string date1;
     while (tmp!=NULL) {
-        if (tmp->isVaccinated == "NO" and tmp->virus == virus1) {
+        if (tmp->virus == virus1 and tmp->isVaccinated == "NO") {
             if (tmp->sList->inList(id1)==true){
-                return 1;
+                return tmp->isVaccinated;
             }
-            else{
-                return 0;
+        }
+        else if (tmp->virus == virus1 and tmp->isVaccinated == "YES"){
+            date1 = tmp->sList->getDate(id1);
+            if (date1 != "-2"){
+                return date1;
             }
         }
         tmp = tmp->next;
     }
-    return -1;
+    return "-1";
+}
+
+bool VirusSkipList::getVaccinateInfo(int id1) {
+    VirusSkipListNode* tmp = head;
+    bool flag = false;
+    string date1;
+    while (tmp!=NULL) {
+        if (tmp->isVaccinated == "NO"){
+            if (tmp->sList->inList(id1)==true){
+                cout << tmp->virus << " " << tmp->isVaccinated << endl;
+                flag = true;
+            }
+        }
+        else if (tmp->isVaccinated == "YES"){
+            date1 = tmp->sList->getDate(id1);
+            if (date1 != "-2"){
+                cout << tmp->virus << " " << tmp->isVaccinated << " " << date1 << endl;
+                flag = true;
+            }
+        }
+        tmp = tmp->next;
+    }
+    return flag;
 }
 
 void VirusSkipList::displayNonVaccinated(const string& virus1) {

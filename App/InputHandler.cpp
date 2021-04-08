@@ -43,6 +43,14 @@ void CommandInput::clear() {
     }
 }
 
+int CommandInput::getCount() {
+    int i=0;
+    while (!wordArray[i].empty()){
+        i++;
+    }
+    return i;
+}
+
 void CommandInput::display(){
     for (int i=0;i<size;i++){
         if (wordArray[i].empty()){

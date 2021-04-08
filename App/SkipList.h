@@ -47,7 +47,8 @@ public:
     VirusSkipList(int);
     void insert(const string&,const string&,Record*,const string&);
     string getDate(const string&,int);
-    int isNotVaccinated(const string&,int);
+    string getVaccinateInfo(int,const string&);
+    bool getVaccinateInfo(int);
 //    void remove(const string&,const string&,int);
     void displayNonVaccinated(const string&);
     void display();

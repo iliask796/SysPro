@@ -45,8 +45,6 @@ private:
 public:
     RecordTable(int);
     Record* insertElement(int,string,string*,int);
-    //TODO Get with NULL instead of search
-    bool searchElement(int);
     Record* getEntry(int);
     void displayTable();
     ~RecordTable();

@@ -78,8 +78,8 @@ int main() {
             end = line.find(' ',start);
             counter++;
         }
-        if (citizenData.searchElement(id)){
-            currRecord = citizenData.getEntry(id);
+        currRecord = citizenData.getEntry(id);
+        if (currRecord != NULL){
             if (currRecord->getName() != name or *currRecord->getCountry()!=country or currRecord->getAge() != age){
                 faultyRecord = true;
             }
@@ -92,6 +92,7 @@ int main() {
             data = line.substr(start,end-start);
             if (data == "NO"){
                 isVaccinated = data;
+                date = "0-0-0000";
             }
         }
         if (counter == 7 and isVaccinated == "YES"){
@@ -99,7 +100,10 @@ int main() {
             data = line.substr(start,end-start);
             date = data;
         }
-        currRecord = citizenData.insertElement(id,name,countries.getInfo(country),age);
+        if (currRecord == NULL){
+            currRecord = citizenData.insertElement(id,name,countries.getInfo(country),age);
+        }
+        //TODO Check if person already in lists before adding
         citizenVaccines.insert(virus,isVaccinated,currRecord,date);
     }
     cout << "*** Data Successfully Inserted ***" << endl;
@@ -107,6 +111,7 @@ int main() {
     bool exit = false;
     CommandInput cmdi(9);
     string input1;
+    string result;
     cout << "*** Type /help for available commands ***" << endl;
     while (!exit){
         cmdi.clear();
@@ -127,6 +132,10 @@ int main() {
             cout << "Caution: ID -> only numbers, date_format: 4-7-2020 and anything in [] -> optional" << endl;
         }
         else if (cmdi.getWord(0) == "/vaccineStatusBloom"){
+            if (cmdi.getCount()!=3){
+                cout << "Error: Arguments Mismatch. Type /help for more info." << endl;
+                continue;
+            }
             if ((cmdi.isDigit(1))==false){
                 cout << "Error: Wrong ID format. Only numbers allowed." << endl;
                 continue;
@@ -142,7 +151,42 @@ int main() {
                 cout << "NO" << endl;
             }
         }
+        else if (cmdi.getWord(0) == "/vaccineStatus"){
+            if ((cmdi.isDigit(1))==false){
+                cout << "Error: Wrong ID format. Only numbers allowed." << endl;
+                continue;
+            }
+            if (cmdi.getCount()==3){
+                if (virusNames.getInfo(cmdi.getWord(2))==NULL){
+                    cout << "Error: Virus Not Found!" << endl;
+                    continue;
+                }
+                result = citizenVaccines.getVaccinateInfo(atoi(cmdi.getWord(1).c_str()),cmdi.getWord(2));
+                if (result == "NO"){
+                    cout << "NOT VACCINATED" << endl;
+                }
+                else if (result == "-1"){
+                    cout << "Error: Relative info not found for this ID." << endl;
+                }
+                else{
+                    cout << "VACCINATED ON " << result << endl;
+                }
+            }
+            else if (cmdi.getCount()==2){
+                if (!citizenVaccines.getVaccinateInfo(atoi(cmdi.getWord(1).c_str()))){
+                    cout << "Error: Relative info not found for this ID." << endl;
+                }
+            }
+            else{
+                cout << "Error: Arguments Mismatch. Type /help for more info." << endl;
+                continue;
+            }
+        }
         else if (cmdi.getWord(0) == "/list-nonVaccinated-Persons"){
+            if (cmdi.getCount()!=2){
+                cout << "Error: Arguments Mismatch. Type /help for more info." << endl;
+                continue;
+            }
             if (virusNames.getInfo(cmdi.getWord(1)) == NULL){
                 cout << "Error: Virus Not Found!" << endl;
                 continue;
@@ -154,9 +198,6 @@ int main() {
         }
         else if (cmdi.getWord(0) == "/test"){
             citizenVaccines.display();
-            cout << "Test1: " << citizenVaccines.isNotVaccinated("H1N1",5660)<<endl;
-            cout << "Test2: " << citizenVaccines.isNotVaccinated("H1N1",142)<<endl;
-            cout << "Test3: " << citizenVaccines.isNotVaccinated("H1N11",5660)<<endl;
         }
         cin.clear();
         fflush(stdin);

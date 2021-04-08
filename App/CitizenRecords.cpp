@@ -139,11 +139,6 @@ Record* RecordTable::insertElement(int id1, string nam, string* country1, int ag
     return citizenInfo;
 }
 
-bool RecordTable::searchElement(int id) {
-    unsigned long index = hash_i(to_string(id),0) % size;
-    return table[index].searchNode(id);
-}
-
 Record* RecordTable::getEntry(int id) {
     unsigned long index = hash_i(to_string(id),0) % size;
     return table[index].getNode(id);
