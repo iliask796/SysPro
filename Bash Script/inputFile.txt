@@ -100,3 +100,4 @@
 3826 Rrhgninz Hwud USA 46 Influenza-C NO
 5893 Yvlrlisgxmme Rfqlfkaxtb Greece 47 Mayaro NO
 5893 Yvlrlisgxmme Rfqlfkaxtb Greece 47 Influenza-C YES 1-1-1993
+3826 Rrhgninz Hwud USA 46 Influenza-C YES 1-1-2000

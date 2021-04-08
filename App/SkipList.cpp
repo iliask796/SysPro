@@ -161,6 +161,7 @@ SkipList::~SkipList() {
             head = tmp;
             tmp = head->next[0];
         }
+        delete tmp;
     }
     delete head;
 }
@@ -203,6 +204,17 @@ void VirusSkipList::insert(const string& virus1, const string& result, Record* d
     tmp = head;
     new_node1->next = tmp;
     head = new_node;
+}
+
+void VirusSkipList::remove(const string& virus1, const string& result, int id1) {
+    VirusSkipListNode* tmp = head;
+    while (tmp!=NULL){
+        if (tmp->isVaccinated==result and tmp->virus==virus1){
+            tmp->sList->remove(id1);
+            return;
+        }
+        tmp = tmp->next;
+    }
 }
 
 string VirusSkipList::getDate(const string& virus1, int date1) {

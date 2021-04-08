@@ -103,8 +103,12 @@ int main() {
         if (currRecord == NULL){
             currRecord = citizenData.insertElement(id,name,countries.getInfo(country),age);
         }
-        //TODO Check if person already in lists before adding
-        citizenVaccines.insert(virus,isVaccinated,currRecord,date);
+        if (citizenVaccines.getVaccinateInfo(currRecord->getId(),virus) == "-1"){
+            citizenVaccines.insert(virus,isVaccinated,currRecord,date);
+        }
+        else {
+            cout << "Error in Record: " << line << endl;
+        }
     }
     cout << "*** Data Successfully Inserted ***" << endl;
     file.close();
@@ -175,6 +179,49 @@ int main() {
             else if (cmdi.getCount()==2){
                 if (!citizenVaccines.getVaccinateInfo(atoi(cmdi.getWord(1).c_str()))){
                     cout << "Error: Relative info not found for this ID." << endl;
+                }
+            }
+            else{
+                cout << "Error: Arguments Mismatch. Type /help for more info." << endl;
+                continue;
+            }
+        }
+        else if (cmdi.getWord(0) == "/insertCitizenRecord"){
+            if (cmdi.getCount() >= 8){
+                if ((cmdi.isDigit(1))==false or cmdi.isDigit(5)==false){
+                    cout << "Error: Wrong ID or Age format. Only numbers allowed." << endl;
+                    continue;
+                }
+                if (cmdi.getWord(7) == "NO" and !cmdi.getWord(8).empty()){
+                    cout << "Error: Record with NO cannot have a date." << endl;
+                    continue;
+                }
+                currRecord = citizenData.getEntry(atoi(cmdi.getWord(1).c_str()));
+                if (currRecord != NULL){
+                    if (currRecord->getName() != cmdi.getWord(2)+" "+cmdi.getWord(3) or *currRecord->getCountry()!=cmdi.getWord(4) or currRecord->getAge() != atoi(cmdi.getWord(5).c_str())){
+                        cout << "Error: Information Mismatch between Existing Record with given ID and the rest Information." << endl;
+                        continue;
+                    }
+                }
+                else{
+                    currRecord = citizenData.insertElement(atoi(cmdi.getWord(1).c_str()),cmdi.getWord(2)+" "+cmdi.getWord(3),countries.getInfo(cmdi.getWord(4)),atoi(cmdi.getWord(5).c_str()));
+                }
+                citizenFilters.addToFilter(cmdi.getWord(6),cmdi.getWord(1));
+                result = citizenVaccines.getVaccinateInfo(currRecord->getId(),cmdi.getWord(6));
+                if (result == "-1"){
+                    if (cmdi.getWord(7)=="NO"){
+                        citizenVaccines.insert(cmdi.getWord(6),cmdi.getWord(7),currRecord,"0-0-0000");
+                    }
+                    else{
+                        citizenVaccines.insert(cmdi.getWord(6),cmdi.getWord(7),currRecord,cmdi.getWord(8));
+                    }
+                }
+                else if (result == "NO"){
+                    citizenVaccines.remove(cmdi.getWord(6),"NO",currRecord->getId());
+                    citizenVaccines.insert(cmdi.getWord(6),cmdi.getWord(7),currRecord,cmdi.getWord(8));
+                }
+                else{
+                    cout << "Error: CITIZEN " << currRecord->getId() << " ALREADY VACCINATED ON " << result << endl;
                 }
             }
             else{

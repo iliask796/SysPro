@@ -25,7 +25,7 @@ string CommandInput::getWord(int pos) {
     if (pos>=0 and pos<=size-1){
         return wordArray[pos];
     }
-    return "-1";
+    return "";
 }
 
 bool CommandInput::isDigit(int pos) {
@@ -45,7 +45,10 @@ void CommandInput::clear() {
 
 int CommandInput::getCount() {
     int i=0;
-    while (!wordArray[i].empty()){
+    while (i<size){
+        if (wordArray[i].empty()){
+            break;
+        }
         i++;
     }
     return i;
