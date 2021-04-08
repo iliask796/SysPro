@@ -3,11 +3,12 @@
 #include "BloomFilter.h"
 #include "SkipList.h"
 #include "InputHandler.h"
+#include <time.h>
 using namespace std;
 
 int main() {
     ifstream file;
-    string filename = "D:\\SysPro\\Bash Script\\inputFile.txt";
+    string filename = "../../Bash_Script/inputFile.txt";
     file.open(filename.c_str());
     string line;
     string data;
@@ -20,7 +21,7 @@ int main() {
     string country;
     string virus;
     string isVaccinated;
-    string date;
+    string today;
     Record* currRecord;
     bool faultyRecord;
     while(getline(file,line)){
@@ -92,19 +93,19 @@ int main() {
             data = line.substr(start,end-start);
             if (data == "NO"){
                 isVaccinated = data;
-                date = "0-0-0000";
+                today = "0-0-0000";
             }
         }
         if (counter == 7 and isVaccinated == "YES"){
             citizenFilters.addToFilter(virus,to_string(id));
             data = line.substr(start,end-start);
-            date = data;
+            today = data;
         }
         if (currRecord == NULL){
             currRecord = citizenData.insertElement(id,name,countries.getInfo(country),age);
         }
         if (citizenVaccines.getVaccinateInfo(currRecord->getId(),virus) == "-1"){
-            citizenVaccines.insert(virus,isVaccinated,currRecord,date);
+            citizenVaccines.insert(virus,isVaccinated,currRecord,today);
         }
         else {
             cout << "Error in Record: " << line << endl;
@@ -130,7 +131,7 @@ int main() {
             cout << "/vaccineStatusBloom citizenID virusName" << endl << "/vaccineStatus citizenID virusName" << endl;
             cout << "/vaccineStatus citizenID" << endl << "/populationStatus [country] virusName date1 date2" << endl;
             cout << "/popStatusByAge [country] virusName date1 date2" << endl;
-            cout << "/insertCitizenRecord citizenID firstName lastName country age virusName YES/NO [date]" << endl;
+            cout << "/insertCitizenRecord citizenID firstName lastName country age virusName YES/NO [today]" << endl;
             cout << "/vaccinateNow citizenID firstName lastName country age virusName" << endl;
             cout << "/list-nonVaccinated-Persons virusName" << endl << "/exit" << endl;
             cout << "Caution: ID -> only numbers, date_format: 4-7-2020 and anything in [] -> optional" << endl;
@@ -193,7 +194,7 @@ int main() {
                     continue;
                 }
                 if (cmdi.getWord(7) == "NO" and !cmdi.getWord(8).empty()){
-                    cout << "Error: Record with NO cannot have a date." << endl;
+                    cout << "Error: Record with NO cannot have a today." << endl;
                     continue;
                 }
                 currRecord = citizenData.getEntry(atoi(cmdi.getWord(1).c_str()));
@@ -230,6 +231,12 @@ int main() {
                 cout << "Error: Arguments Mismatch. Type /help for more info." << endl;
                 continue;
             }
+        }
+        else if (cmdi.getWord(0) == "/vaccinateNow"){
+            time_t currentTime = time(NULL);
+            tm* currentTimePointer = localtime(&currentTime);
+            string today = to_string(currentTimePointer->tm_mday) + "-" + to_string(currentTimePointer->tm_mon + 1) + "-" + to_string(currentTimePointer->tm_year + 1900);
+            cout << today << endl;
         }
         else if (cmdi.getWord(0) == "/list-nonVaccinated-Persons"){
             if (cmdi.getCount()!=2){
