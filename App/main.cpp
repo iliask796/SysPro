@@ -2,6 +2,7 @@
 #include <fstream>
 #include "BloomFilter.h"
 #include "SkipList.h"
+#include "InputHandler.h"
 using namespace std;
 
 int main() {
@@ -104,17 +105,18 @@ int main() {
     cout << "*** Data Successfully Inserted ***" << endl;
     file.close();
     bool exit = false;
-    string selection;
+    CommandInput cmdi(9);
     string input1;
-    string input2;
     cout << "*** Type /help for available commands ***" << endl;
     while (!exit){
+        cmdi.clear();
         cout << "*** Waiting For Action ***" << endl;
-        cin >> selection;
-        if (selection == "/exit"){
+        getline(cin,input1);
+        cmdi.insertCommand(input1);
+        if (cmdi.getWord(0) == "/exit"){
             exit = true;
         }
-        else if (selection == "/help"){
+        else if (cmdi.getWord(0) == "/help"){
             cout << "*** Listing available commands *** " << endl;
             cout << "/vaccineStatusBloom citizenID virusName" << endl << "/vaccineStatus citizenID virusName" << endl;
             cout << "/vaccineStatus citizenID" << endl << "/populationStatus [country] virusName date1 date2" << endl;
@@ -124,23 +126,33 @@ int main() {
             cout << "/list-nonVaccinated-Persons virusName" << endl << "/exit" << endl;
             cout << "Caution: ID -> only numbers, date_format: 4-7-2020 and anything in [] -> optional" << endl;
         }
-        else if (selection == "/vaccineStatusBloom"){
-            cin >> input1;
-            cin >> input2;
-            if (citizenFilters.probInFilter(input1,input2) == 1){
+        else if (cmdi.getWord(0) == "/vaccineStatusBloom"){
+            if ((cmdi.isDigit(1))==false){
+                cout << "Error: Wrong ID format. Only numbers allowed." << endl;
+                continue;
+            }
+            if (virusNames.getInfo(cmdi.getWord(2))==NULL){
+                cout << "Error: Virus Not Found!" << endl;
+                continue;
+            }
+            if (citizenFilters.probInFilter(cmdi.getWord(1),cmdi.getWord(2)) == 1){
                 cout << "MAYBE" << endl;
             }
-            else if (citizenFilters.probInFilter(input1,input2) == 0){
+            else{
                 cout << "NO" << endl;
             }
-            else{
-                cout << "Error: Virus Not Found!" << endl;
-            }
         }
-        else if (selection == "/print"){
+        else if (cmdi.getWord(0) == "/list-nonVaccinated-Persons"){
+            if (virusNames.getInfo(cmdi.getWord(1)) == NULL){
+                cout << "Error: Virus Not Found!" << endl;
+                continue;
+            }
+            citizenVaccines.displayNonVaccinated(cmdi.getWord(1));
+        }
+        else if (cmdi.getWord(0) == "/print"){
             citizenData.displayTable();
         }
-        else if (selection == "/test"){
+        else if (cmdi.getWord(0) == "/test"){
             citizenVaccines.display();
             cout << "Test1: " << citizenVaccines.isNotVaccinated("H1N1",5660)<<endl;
             cout << "Test2: " << citizenVaccines.isNotVaccinated("H1N1",142)<<endl;

@@ -81,7 +81,6 @@ int BloomList::probInFilter(string str,string virusName) {
         }
         tmp = tmp->next;
     }
-    return 2;
 }
 
 BloomList::~BloomList() {

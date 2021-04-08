@@ -22,7 +22,8 @@ public:
     string getDate(int);
     bool inList(int);
     void remove(int);
-    void display();
+    void displayInfo();
+    void display1();
     ~SkipList();
 };
 
@@ -48,6 +49,7 @@ public:
     string getDate(const string&,int);
     int isNotVaccinated(const string&,int);
 //    void remove(const string&,const string&,int);
+    void displayNonVaccinated(const string&);
     void display();
     ~VirusSkipList();
 };
