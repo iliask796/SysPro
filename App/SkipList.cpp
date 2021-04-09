@@ -331,7 +331,7 @@ void VirusSkipList::printStatsByAge(string country1, const string& virus1, int p
         }
         cout << " " << ageStats[i] << " ";
         percentage = (float)ageStats[i] / (float)population;
-        printf("%.2lf",percentage);
+        printf("%.2lf",100*percentage);
         cout << "%" << endl;
     }
     delete[] ageStats;

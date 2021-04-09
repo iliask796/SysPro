@@ -9,6 +9,7 @@ using namespace std;
 int main(int argc, char *argv[]) {
     ifstream file;
     string filenameExtension = argv[2];
+    //TODO change filename directory
     string filename = "../../Bash_Script/"+filenameExtension;
     file.open(filename.c_str());
     string line;
@@ -210,7 +211,7 @@ int main(int argc, char *argv[]) {
                             vaccinatedPopulation = citizenVaccines.getPopulation(country1,cmdi.getWord(1));
                             percentage = (float)vaccinatedPopulation / (float)totalPopulation;
                             cout << country1 << " " << vaccinatedPopulation << " ";
-                            printf("%.2lf",percentage);
+                            printf("%.2lf",100*percentage);
                             cout << "%" << endl;
                         }
                         else{
@@ -232,7 +233,7 @@ int main(int argc, char *argv[]) {
                         vaccinatedPopulation = citizenVaccines.getPopulation(cmdi.getWord(1),cmdi.getWord(2));
                         percentage = (float)vaccinatedPopulation / (float)totalPopulation;
                         cout << cmdi.getWord(1) << " " << vaccinatedPopulation << " ";
-                        printf("%.2lf",percentage);
+                        printf("%.2lf",100*percentage);
                         cout << "%" << endl;
                     }
                     else{
@@ -271,9 +272,9 @@ int main(int argc, char *argv[]) {
                     }
                 }
                 else{
-                    currRecord = citizenData.insertElement(atoi(cmdi.getWord(1).c_str()),cmdi.getWord(2)+" "+cmdi.getWord(3),countries.getInfo(cmdi.getWord(4)),atoi(cmdi.getWord(5).c_str()));
                     if (countries.getInfo(cmdi.getWord(4))==NULL){
                         countries.insertNode(cmdi.getWord(4));
+                        countries.increasePopulation(cmdi.getWord(4));
                     }
                     else{
                         countries.increasePopulation(cmdi.getWord(4));
@@ -281,6 +282,7 @@ int main(int argc, char *argv[]) {
                     if (virusNames.getInfo(cmdi.getWord(6))==NULL){
                         virusNames.insertNode(cmdi.getWord(6));
                     }
+                    currRecord = citizenData.insertElement(atoi(cmdi.getWord(1).c_str()),cmdi.getWord(2)+" "+cmdi.getWord(3),countries.getInfo(cmdi.getWord(4)),atoi(cmdi.getWord(5).c_str()));
                 }
                 result = citizenVaccines.getVaccinateInfo(currRecord->getId(),cmdi.getWord(6));
                 if (result == "-1"){
@@ -322,9 +324,9 @@ int main(int argc, char *argv[]) {
                     }
                 }
                 else{
-                    currRecord = citizenData.insertElement(atoi(cmdi.getWord(1).c_str()),cmdi.getWord(2)+" "+cmdi.getWord(3),countries.getInfo(cmdi.getWord(4)),atoi(cmdi.getWord(5).c_str()));
                     if (countries.getInfo(cmdi.getWord(4))==NULL){
                         countries.insertNode(cmdi.getWord(4));
+                        countries.increasePopulation(cmdi.getWord(4));
                     }
                     else{
                         countries.increasePopulation(cmdi.getWord(4));
@@ -332,6 +334,7 @@ int main(int argc, char *argv[]) {
                     if (virusNames.getInfo(cmdi.getWord(6))==NULL){
                         virusNames.insertNode(cmdi.getWord(6));
                     }
+                    currRecord = citizenData.insertElement(atoi(cmdi.getWord(1).c_str()),cmdi.getWord(2)+" "+cmdi.getWord(3),countries.getInfo(cmdi.getWord(4)),atoi(cmdi.getWord(5).c_str()));
                 }
                 result = citizenVaccines.getVaccinateInfo(currRecord->getId(),cmdi.getWord(6));
                 time_t currentTime = time(NULL);
