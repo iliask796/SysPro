@@ -6,9 +6,18 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
+    if (argc != 5){
+    	cout << "Error: Invalid Amount of App Arguments" << endl;
+        return -1;
+    }
+    string arg1 = argv[1], arg3 = argv[3];
+    if (arg1 != "-c" or arg3 != "-b"){
+    	cout << "Error: Invalid App Arguments" << endl;
+	return -2;
+    }
     ifstream file;
     string filenameExtension = argv[2];
-    string filename = "../../Bash_Script/"+filenameExtension;
+    string filename = "../Bash_Script/"+filenameExtension;
     file.open(filename.c_str());
     string line,data;
     int start,end;
@@ -126,8 +135,8 @@ int main(int argc, char *argv[]) {
         else if (cmdi.getWord(0) == "/help"){
             cout << "*** Listing available commands *** " << endl;
             cout << "/vaccineStatusBloom citizenID virusName" << endl << "/vaccineStatus citizenID virusName" << endl;
-            cout << "/vaccineStatus citizenID" << endl << "/populationStatus [country] virusName date1 date2" << endl;
-            cout << "/popStatusByAge [country] virusName date1 date2" << endl;
+            cout << "/vaccineStatus citizenID" << endl << "/populationStatus [country] virusName [date1 date2]" << endl;
+            cout << "/popStatusByAge [country] virusName [date1 date2]" << endl;
             cout << "/insertCitizenRecord citizenID firstName lastName country age virusName YES/NO [date]" << endl;
             cout << "/vaccinateNow citizenID firstName lastName country age virusName" << endl;
             cout << "/list-nonVaccinated-Persons virusName" << endl << "/exit" << endl;
@@ -326,8 +335,10 @@ int main(int argc, char *argv[]) {
                     }
                 }
                 else if (result == "NO"){
-                    citizenVaccines.remove(cmdi.getWord(6),"NO",currRecord->getId());
-                    citizenVaccines.insert(cmdi.getWord(6),cmdi.getWord(7),currRecord,cmdi.getWord(8));
+		    if (cmdi.getWord(7) == "YES"){
+			citizenVaccines.remove(cmdi.getWord(6),"NO",currRecord->getId());
+                    	citizenVaccines.insert(cmdi.getWord(6),cmdi.getWord(7),currRecord,cmdi.getWord(8));
+		    }
                 }
                 else{
                     cout << "Error: CITIZEN " << currRecord->getId() << " ALREADY VACCINATED ON " << result << endl;
@@ -400,9 +411,6 @@ int main(int argc, char *argv[]) {
                 continue;
             }
             citizenVaccines.displayNonVaccinated(cmdi.getWord(1));
-        }
-        else if (cmdi.getWord(0) == "/test"){
-            cout << countries.getPopulation(cmdi.getWord(1)) << endl;
         }
         else{
             cout << "Error: Unknown command. Check /help for more information." << endl;

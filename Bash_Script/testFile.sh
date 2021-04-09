@@ -1,6 +1,6 @@
 #!/bin/bash
 a=0
-FILENAME="inputFile.txt"
+FILENAME="inputFile"
 if [ ! -f "$1" ] || [ ! -f "$2" ]
 	then
 		echo "Input does not contain the two required files."
@@ -70,12 +70,12 @@ while [ "$a" -lt "$3" ]
 	vaccinated=$(( RANDOM % 2 ))
 	if [ "$vaccinated" -eq 0 ]
 	then
-		echo "$id" "$fullname" "${countries[$country]}" "$age" "${viruses[$virus]}" "NO" >> inputFile.txt
+		echo "$id" "$fullname" "${countries[$country]}" "$age" "${viruses[$virus]}" "NO" >> inputFile
 	else
 		day=$(( ( RANDOM % 30 ) + 1 ))
 		month=$(( ( RANDOM % 12 ) + 1 ))
 		year=$(( 2020 - ( RANDOM % $age ) ))
-		echo "$id" "$fullname" "${countries[$country]}" "$age" "${viruses[$virus]}" "YES" "$day"-"$month"-"$year" >> inputFile.txt
+		echo "$id" "$fullname" "${countries[$country]}" "$age" "${viruses[$virus]}" "YES" "$day"-"$month"-"$year" >> inputFile
 	fi
 	let "a = a + 1"
 	done
