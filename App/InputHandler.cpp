@@ -37,6 +37,26 @@ bool CommandInput::isDigit(int pos) {
     return true;
 }
 
+bool CommandInput::isDate(int pos) {
+    int i;
+    string date = wordArray[pos];
+    if (date.length() < 8 or date.length() > 10){
+        return false;
+    }
+    if (isdigit(date[0]) == false){
+        return false;
+    }
+    for (i=1;i<4;i++){
+        if (isdigit(date[date.length()-i]) == false){
+            return false;
+        }
+    }
+    if (date[date.length()-(++i)] != '-' or (date[2] != '-' and date[3]!= '-')){
+        return false;
+    }
+    return true;
+}
+
 void CommandInput::clear() {
     for (int i=0;i<size;i++){
         wordArray[i] = "";
@@ -56,4 +76,49 @@ int CommandInput::getCount() {
 
 CommandInput::~CommandInput() {
     delete[] wordArray;
+}
+
+int compareDates(const string& date1,const string& date2) {
+    string dateInfo1[3];
+    string dateInfo2[3];
+    int i,start = 0,end = date1.find('-');
+    for (i=0;i<2;i++){
+        dateInfo1[i]= date1.substr(start,end-start);
+        start = end + 1;
+        end = date1.find('-',start);
+    }
+    dateInfo1[i]= date1.substr(start,end-start);
+    start = 0;
+    end = date2.find('-');
+    for (i=0;i<2;i++){
+        dateInfo2[i]= date2.substr(start,end-start);
+        start = end + 1;
+        end = date2.find('-',start);
+    }
+    dateInfo2[i]= date2.substr(start,end-start);
+    if (dateInfo1[2]>dateInfo2[2]){
+        return -1;
+    }
+    else if (dateInfo1[2]<dateInfo2[2]){
+        return 1;
+    }
+    else{
+        if (dateInfo1[1]>dateInfo2[1]){
+            return -1;
+        }
+        else if (dateInfo1[1]<dateInfo2[1]){
+            return 1;
+        }
+        else{
+            if (dateInfo1[0]>dateInfo2[0]){
+                return -1;
+            }
+            else if (dateInfo1[0]<dateInfo2[0]){
+                return 1;
+            }
+            else{
+                return 0;
+            }
+        }
+    }
 }

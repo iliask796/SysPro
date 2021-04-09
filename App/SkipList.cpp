@@ -129,7 +129,7 @@ void SkipList::remove(int id1) {
     }
 }
 
-int SkipList::getPopulation(string country1) {
+int SkipList::getPopulation(const string& country1) {
     SkipListNode* tmp = head->next[0];
     int counter = 0;
     if (tmp == NULL){
@@ -144,7 +144,22 @@ int SkipList::getPopulation(string country1) {
     return counter;
 }
 
-int* SkipList::getPopulationByAge(string country1) {
+int SkipList::getPopulation(const string& country1, const string& date1, const string& date2) {
+    SkipListNode* tmp = head->next[0];
+    int counter = 0;
+    if (tmp == NULL){
+        cout << "No info available for this virus." << endl;
+    }
+    while (tmp != NULL){
+        if (*(tmp->data->getCountry()) == country1 and compareDates(date1,tmp->date) == 1 and compareDates(tmp->date,date2) == 1){
+            counter++;
+        }
+        tmp = tmp->next[0];
+    }
+    return counter;
+}
+
+int* SkipList::getPopulationByAge(const string& country1) {
     SkipListNode* tmp = head->next[0];
     if (tmp == NULL){
         cout << "No info available for this virus." << endl;
@@ -156,6 +171,36 @@ int* SkipList::getPopulationByAge(string country1) {
     }
     while (tmp != NULL){
         if (*(tmp->data->getCountry()) == country1){
+            if (tmp->data->getAge() <= 20){
+                ageStats[0]++;
+            }
+            else if (tmp->data->getAge() <= 40){
+                ageStats[1]++;
+            }
+            else if (tmp->data->getAge() <= 60){
+                ageStats[2]++;
+            }
+            else{
+                ageStats[3]++;
+            }
+        }
+        tmp = tmp->next[0];
+    }
+    return ageStats;
+}
+
+int* SkipList::getPopulationByAge(const string& country1, const string& date1, const string& date2) {
+    SkipListNode* tmp = head->next[0];
+    if (tmp == NULL){
+        cout << "No info available for this virus." << endl;
+        return NULL;
+    }
+    int* ageStats = new int[4];
+    for (int i=0;i<4;i++){
+        ageStats[i] = 0;
+    }
+    while (tmp != NULL){
+        if (*(tmp->data->getCountry()) == country1 and compareDates(date1,tmp->date) == 1 and compareDates(tmp->date,date2) == 1){
             if (tmp->data->getAge() <= 20){
                 ageStats[0]++;
             }
@@ -292,7 +337,7 @@ bool VirusSkipList::getVaccinateInfo(int id1) {
     return flag;
 }
 
-int VirusSkipList::getPopulation(string country1, const string& virus1) {
+int VirusSkipList::getPopulation(const string& country1, const string& virus1) {
     VirusSkipListNode* tmp = head;
     while (tmp!=NULL) {
         if (tmp->isVaccinated == "YES" and tmp->virus == virus1) {
@@ -303,13 +348,58 @@ int VirusSkipList::getPopulation(string country1, const string& virus1) {
     return 0;
 }
 
-void VirusSkipList::printStatsByAge(string country1, const string& virus1, int population) {
+int VirusSkipList::getPopulation(const string& country1, const string& virus1, const string& date1, const string& date2) {
+    VirusSkipListNode* tmp = head;
+    while (tmp!=NULL) {
+        if (tmp->isVaccinated == "YES" and tmp->virus == virus1) {
+            return tmp->sList->getPopulation(country1,date1,date2);
+        }
+        tmp = tmp->next;
+    }
+    return 0;
+}
+
+void VirusSkipList::printStatsByAge(const string& country1, const string& virus1, int population) {
     VirusSkipListNode* tmp = head;
     int* ageStats;
     float percentage;
     while (tmp!=NULL) {
         if (tmp->isVaccinated == "YES" and tmp->virus == virus1) {
             ageStats = tmp->sList->getPopulationByAge(country1);
+            break;
+        }
+        tmp = tmp->next;
+    }
+    cout << country1 << endl;
+    for (int i=0;i<4;i++){
+        switch(i){
+            case 0:
+                cout << "0-20";
+                break;
+            case 1:
+                cout << "20-40";
+                break;
+            case 2:
+                cout << "40-60";
+                break;
+            default:
+                cout << "60+";
+        }
+        cout << " " << ageStats[i] << " ";
+        percentage = (float)ageStats[i] / (float)population;
+        printf("%.2lf",100*percentage);
+        cout << "%" << endl;
+    }
+    delete[] ageStats;
+}
+
+void VirusSkipList::printStatsByAge(const string& country1, const string& virus1, int population, const string& date1, const string& date2) {
+    VirusSkipListNode* tmp = head;
+    int* ageStats;
+    float percentage;
+    while (tmp!=NULL) {
+        if (tmp->isVaccinated == "YES" and tmp->virus == virus1) {
+            ageStats = tmp->sList->getPopulationByAge(country1,date1,date2);
             break;
         }
         tmp = tmp->next;

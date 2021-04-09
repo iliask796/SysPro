@@ -2,28 +2,19 @@
 #include <fstream>
 #include "BloomFilter.h"
 #include "SkipList.h"
-#include "InputHandler.h"
 #include <ctime>
 using namespace std;
 
 int main(int argc, char *argv[]) {
     ifstream file;
     string filenameExtension = argv[2];
-    //TODO change filename directory
     string filename = "../../Bash_Script/"+filenameExtension;
     file.open(filename.c_str());
-    string line;
-    string data;
-    int start;
-    int end;
+    string line,data;
+    int start,end;
     int counter = 0;
-    int id;
-    string name;
-    int age;
-    string country;
-    string virus;
-    string isVaccinated;
-    string date;
+    int id,age;
+    string name,country,virus,isVaccinated,date;
     Record* currRecord;
     bool faultyRecord;
     while(getline(file,line)){
@@ -120,11 +111,8 @@ int main(int argc, char *argv[]) {
     bool exit = false;
     CommandInput cmdi(9);
     int size;
-    string input1;
-    string result;
-    string country1;
-    int vaccinatedPopulation;
-    int totalPopulation;
+    string input1,result,country1;
+    int vaccinatedPopulation,totalPopulation;
     float percentage;
     cout << "*** Type /help for available commands ***" << endl;
     while (!exit){
@@ -241,10 +229,54 @@ int main(int argc, char *argv[]) {
                     }
                     break;
                 case 4:
-                    cout << "c" << endl;
+                    if (virusNames.getInfo(cmdi.getWord(1))==NULL){
+                        cout << "Error: Virus Not Found." << endl;
+                        break;
+                    }
+                    if (!cmdi.isDate(2) or !cmdi.isDate(3)){
+                        cout << "Error: This command requires either no date arguments or 2 of them at the end.\nDate format: 1-1-2000" << endl;
+                        break;
+                    }
+                    size = countries.getCapacity();
+                    for (int i=1;i<=size;i++){
+                        country1 = countries.getElement(i);
+                        totalPopulation = countries.getPopulation(country1);
+                        if (cmdi.getWord(0) == "/populationStatus"){
+                            vaccinatedPopulation = citizenVaccines.getPopulation(country1,cmdi.getWord(1),cmdi.getWord(2),cmdi.getWord(3));
+                            percentage = (float)vaccinatedPopulation / (float)totalPopulation;
+                            cout << country1 << " " << vaccinatedPopulation << " ";
+                            printf("%.2lf",100*percentage);
+                            cout << "%" << endl;
+                        }
+                        else{
+                            citizenVaccines.printStatsByAge(country1,cmdi.getWord(1),totalPopulation,cmdi.getWord(2),cmdi.getWord(3));
+                        }
+                    }
                     break;
                 case 5:
-                    cout << "d" << endl;
+                    if (countries.getInfo(cmdi.getWord(1))==NULL){
+                        cout << "Error: Country Not Found." << endl;
+                        break;
+                    }
+                    if (virusNames.getInfo(cmdi.getWord(2))==NULL){
+                        cout << "Error: Virus Not Found." << endl;
+                        break;
+                    }
+                    if (!cmdi.isDate(3) or !cmdi.isDate(4)){
+                        cout << "Error: This command requires either no date arguments or 2 of them at the end.\nDate format: 1-1-2000" << endl;
+                        break;
+                    }
+                    totalPopulation = countries.getPopulation(cmdi.getWord(1));
+                    if (cmdi.getWord(0) == "/populationStatus"){
+                        vaccinatedPopulation = citizenVaccines.getPopulation(cmdi.getWord(1),cmdi.getWord(2),cmdi.getWord(3),cmdi.getWord(4));
+                        percentage = (float)vaccinatedPopulation / (float)totalPopulation;
+                        cout << cmdi.getWord(1) << " " << vaccinatedPopulation << " ";
+                        printf("%.2lf",100*percentage);
+                        cout << "%" << endl;
+                    }
+                    else{
+                        citizenVaccines.printStatsByAge(cmdi.getWord(1),cmdi.getWord(2),totalPopulation,cmdi.getWord(3),cmdi.getWord(4));
+                    }
                     break;
                 default:
                     cout << "Error: Arguments Mismatch. Type /help for more info." << endl;

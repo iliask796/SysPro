@@ -10,7 +10,10 @@ public:
     void insertCommand(const string&);
     string getWord(int);
     bool isDigit(int);
+    bool isDate(int);
     void clear();
     int getCount();
     ~CommandInput();
 };
+
+int compareDates(const string&,const string&);
