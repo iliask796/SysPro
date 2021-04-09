@@ -126,7 +126,16 @@ RecordTable::~RecordTable() {
 
 InfoNode::InfoNode(string s1) {
     info = s1;
+    population = 0;
     next = NULL;
+}
+
+void InfoNode::increasePopulation() {
+    population++;
+}
+
+int InfoNode::getPopulation() {
+    return population;
 }
 
 InfoNode::~InfoNode() {
@@ -160,6 +169,50 @@ string* InfoList::getInfo(string s1) {
         tmp = tmp->next;
     }
     return NULL;
+}
+
+void InfoList::increasePopulation(string s1) {
+    InfoNode* tmp = head;
+    while (tmp!=NULL){
+        if (tmp->info.compare(s1)==0){
+            tmp->increasePopulation();
+        }
+        tmp = tmp->next;
+    }
+}
+
+int InfoList::getPopulation(string s1) {
+    InfoNode* tmp = head;
+    while (tmp!=NULL){
+        if (tmp->info.compare(s1)==0){
+            return tmp->getPopulation();
+        }
+        tmp = tmp->next;
+    }
+    return -1;
+}
+
+int InfoList::getCapacity() {
+    InfoNode* tmp = head;
+    int counter = 0;
+    while (tmp!=NULL){
+        counter++;
+        tmp = tmp->next;
+    }
+    return counter;
+}
+
+string InfoList::getElement(int pos) {
+    InfoNode* tmp = head;
+    if (tmp == NULL){
+        return "";
+    }
+    int i = 1;
+    while (pos != i){
+        tmp = tmp->next;
+        i++;
+    }
+    return tmp->info;
 }
 
 InfoList::~InfoList() {

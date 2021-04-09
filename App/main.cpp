@@ -105,6 +105,7 @@ int main(int argc, char *argv[]) {
         }
         if (currRecord == NULL){
             currRecord = citizenData.insertElement(id,name,countries.getInfo(country),age);
+            countries.increasePopulation(country);
         }
         if (citizenVaccines.getVaccinateInfo(currRecord->getId(),virus) == "-1"){
             citizenVaccines.insert(virus, isVaccinated, currRecord, date);
@@ -117,8 +118,13 @@ int main(int argc, char *argv[]) {
     file.close();
     bool exit = false;
     CommandInput cmdi(9);
+    int size;
     string input1;
     string result;
+    string country1;
+    int vaccinatedPopulation;
+    int totalPopulation;
+    float percentage;
     cout << "*** Type /help for available commands ***" << endl;
     while (!exit){
         cmdi.clear();
@@ -189,6 +195,60 @@ int main(int argc, char *argv[]) {
                 continue;
             }
         }
+        else if (cmdi.getWord(0) == "/populationStatus" or cmdi.getWord(0) == "/popStatusByAge"){
+            switch(cmdi.getCount()){
+                case 2:
+                    if (virusNames.getInfo(cmdi.getWord(1))==NULL){
+                        cout << "Error: Virus Not Found." << endl;
+                        break;
+                    }
+                    size = countries.getCapacity();
+                    for (int i=1;i<=size;i++){
+                        country1 = countries.getElement(i);
+                        totalPopulation = countries.getPopulation(country1);
+                        if (cmdi.getWord(0) == "/populationStatus"){
+                            vaccinatedPopulation = citizenVaccines.getPopulation(country1,cmdi.getWord(1));
+                            percentage = (float)vaccinatedPopulation / (float)totalPopulation;
+                            cout << country1 << " " << vaccinatedPopulation << " ";
+                            printf("%.2lf",percentage);
+                            cout << "%" << endl;
+                        }
+                        else{
+                            citizenVaccines.printStatsByAge(country1,cmdi.getWord(1),totalPopulation);
+                        }
+                    }
+                    break;
+                case 3:
+                    if (countries.getInfo(cmdi.getWord(1))==NULL){
+                        cout << "Error: Country Not Found." << endl;
+                        break;
+                    }
+                    if (virusNames.getInfo(cmdi.getWord(2))==NULL){
+                        cout << "Error: Virus Not Found." << endl;
+                        break;
+                    }
+                    totalPopulation = countries.getPopulation(cmdi.getWord(1));
+                    if (cmdi.getWord(0) == "/populationStatus"){
+                        vaccinatedPopulation = citizenVaccines.getPopulation(cmdi.getWord(1),cmdi.getWord(2));
+                        percentage = (float)vaccinatedPopulation / (float)totalPopulation;
+                        cout << cmdi.getWord(1) << " " << vaccinatedPopulation << " ";
+                        printf("%.2lf",percentage);
+                        cout << "%" << endl;
+                    }
+                    else{
+                        citizenVaccines.printStatsByAge(cmdi.getWord(1),cmdi.getWord(2),totalPopulation);
+                    }
+                    break;
+                case 4:
+                    cout << "c" << endl;
+                    break;
+                case 5:
+                    cout << "d" << endl;
+                    break;
+                default:
+                    cout << "Error: Arguments Mismatch. Type /help for more info." << endl;
+            }
+        }
         else if (cmdi.getWord(0) == "/insertCitizenRecord"){
             if (cmdi.getCount() >= 8){
                 if ((cmdi.isDigit(1))==false or cmdi.isDigit(5)==false){
@@ -212,6 +272,15 @@ int main(int argc, char *argv[]) {
                 }
                 else{
                     currRecord = citizenData.insertElement(atoi(cmdi.getWord(1).c_str()),cmdi.getWord(2)+" "+cmdi.getWord(3),countries.getInfo(cmdi.getWord(4)),atoi(cmdi.getWord(5).c_str()));
+                    if (countries.getInfo(cmdi.getWord(4))==NULL){
+                        countries.insertNode(cmdi.getWord(4));
+                    }
+                    else{
+                        countries.increasePopulation(cmdi.getWord(4));
+                    }
+                    if (virusNames.getInfo(cmdi.getWord(6))==NULL){
+                        virusNames.insertNode(cmdi.getWord(6));
+                    }
                 }
                 result = citizenVaccines.getVaccinateInfo(currRecord->getId(),cmdi.getWord(6));
                 if (result == "-1"){
@@ -232,12 +301,6 @@ int main(int argc, char *argv[]) {
                 }
                 if (cmdi.getWord(7) == "YES"){
                     citizenFilters.addToFilter(cmdi.getWord(6),cmdi.getWord(1));
-                }
-                if (countries.getInfo(cmdi.getWord(4))==NULL){
-                    countries.insertNode(cmdi.getWord(4));
-                }
-                if (virusNames.getInfo(cmdi.getWord(6))==NULL){
-                    virusNames.insertNode(cmdi.getWord(6));
                 }
             }
             else{
@@ -260,6 +323,15 @@ int main(int argc, char *argv[]) {
                 }
                 else{
                     currRecord = citizenData.insertElement(atoi(cmdi.getWord(1).c_str()),cmdi.getWord(2)+" "+cmdi.getWord(3),countries.getInfo(cmdi.getWord(4)),atoi(cmdi.getWord(5).c_str()));
+                    if (countries.getInfo(cmdi.getWord(4))==NULL){
+                        countries.insertNode(cmdi.getWord(4));
+                    }
+                    else{
+                        countries.increasePopulation(cmdi.getWord(4));
+                    }
+                    if (virusNames.getInfo(cmdi.getWord(6))==NULL){
+                        virusNames.insertNode(cmdi.getWord(6));
+                    }
                 }
                 result = citizenVaccines.getVaccinateInfo(currRecord->getId(),cmdi.getWord(6));
                 time_t currentTime = time(NULL);
@@ -275,12 +347,6 @@ int main(int argc, char *argv[]) {
                 else{
                     cout << "Error: CITIZEN " << currRecord->getId() << " ALREADY VACCINATED ON " << result << endl;
                     continue;
-                }
-                if (countries.getInfo(cmdi.getWord(4))==NULL){
-                    countries.insertNode(cmdi.getWord(4));
-                }
-                if (virusNames.getInfo(cmdi.getWord(6))==NULL){
-                    virusNames.insertNode(cmdi.getWord(6));
                 }
                 citizenFilters.addToFilter(cmdi.getWord(6),cmdi.getWord(1));
             }
@@ -299,6 +365,12 @@ int main(int argc, char *argv[]) {
                 continue;
             }
             citizenVaccines.displayNonVaccinated(cmdi.getWord(1));
+        }
+        else if (cmdi.getWord(0) == "/test"){
+            cout << countries.getPopulation(cmdi.getWord(1)) << endl;
+        }
+        else{
+            cout << "Error: Unknown command. Check /help for more information." << endl;
         }
         cin.clear();
         fflush(stdin);

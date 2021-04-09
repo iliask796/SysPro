@@ -10,7 +10,7 @@ public:
     Record(int,string,string*,int);
     int getId() const;
     const string& getName() const;
-    string *getCountry() const;
+    string* getCountry() const;
     int getAge() const;
     ~Record();
 };
@@ -49,9 +49,12 @@ public:
 class InfoNode{
 private:
     string info;
+    int population;
     InfoNode* next;
 public:
     InfoNode(string);
+    void increasePopulation();
+    int getPopulation();
     ~InfoNode();
     friend class InfoList;
 };
@@ -63,5 +66,9 @@ public:
     InfoList();
     void insertNode(string);
     string* getInfo(string);
+    void increasePopulation(string);
+    int getPopulation(string);
+    int getCapacity();
+    string getElement(int);
     ~InfoList();
 };

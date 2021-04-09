@@ -22,6 +22,8 @@ public:
     string getDate(int);
     bool inList(int);
     void remove(int);
+    int getPopulation(string);
+    int* getPopulationByAge(string);
     void displayInfo();
     ~SkipList();
 };
@@ -48,6 +50,8 @@ public:
     void remove(const string&,const string&,int);
     string getVaccinateInfo(int,const string&);
     bool getVaccinateInfo(int);
+    int getPopulation(string,const string&);
+    void printStatsByAge(string,const string&,int);
     void displayNonVaccinated(const string&);
     ~VirusSkipList();
 };
