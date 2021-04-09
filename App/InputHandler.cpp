@@ -1,5 +1,4 @@
 #include "InputHandler.h"
-#include <iostream>
 
 CommandInput::CommandInput(int size1) {
     size = size1;
