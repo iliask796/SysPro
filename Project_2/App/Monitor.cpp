@@ -9,8 +9,8 @@
 using namespace std;
 
 #define RECORDTABLESIZE 100
-#define BUFFSIZE 500
-#define BLOOMSIZE 1000
+#define BUFFSIZE 100
+#define BLOOMSIZE 333
 
 int sig_flag;
 void catchINT(int);
@@ -63,38 +63,37 @@ int main(int argc, char *argv[]){
     }
     entriesNum = *msgbuf;
     cout << "This is process: " << getpid() << endl;
-    for (i=1;i<=entriesNum;i++){
+    for (i=1;i<=entriesNum;i++) {
         if (read(fd0, msgbuf, sizeof(int)) < 0) {
             perror(" problem in reading ");
             exit(5);
         }
-        length=*msgbuf;
+        length = *msgbuf;
         if (read(fd0, msgbuf, length) < 0) {
             perror(" problem in reading ");
             exit(5);
         }
-        msgbuf[length]='\0';
+        msgbuf[length] = '\0';
         subdir.assign(msgbuf);
         subdir = inputdir + "/" + subdir;
         if ((dir_ptr = opendir(subdir.c_str())) == NULL) {
             cout << stderr << " cannot open " << subdir << endl;
-        }
-        else {
+        } else {
 //            cout << "Directory " << msgbuf << " successfully opened." << endl;
-            while ((direntp = readdir(dir_ptr)) != NULL ){
-                if (direntp->d_name[0] != '.'){
+            while ((direntp = readdir(dir_ptr)) != NULL) {
+                if (direntp->d_name[0] != '.') {
 //                    cout << "File " << direntp->d_name << " found here." << endl;
                     filePath = subdir + "/" + direntp->d_name;
                     countryFile.open(filePath.c_str());
 //                    cout << "Reading file." << endl;
-                    while(getline(countryFile,line)){
+                    while (getline(countryFile, line)) {
                         isVaccinated = "";
                         faultyRecord = false;
                         counter = 0;
                         start = 0;
                         end = line.find(' ');
-                        while (end != -1){
-                            data = line.substr(start,end-start);
+                        while (end != -1) {
+                            data = line.substr(start, end - start);
                             switch (counter) {
                                 case 0:
                                     id = atoi(data.c_str());
@@ -107,7 +106,7 @@ int main(int argc, char *argv[]){
                                     break;
                                 case 3:
                                     country = data;
-                                    if (countries.getInfo(country)==NULL){
+                                    if (countries.getInfo(country) == NULL) {
                                         countries.insertNode(country);
                                         countries.increment();
                                     }
@@ -117,7 +116,7 @@ int main(int argc, char *argv[]){
                                     break;
                                 case 5:
                                     virus = data;
-                                    if (virusNames.getInfo(virus)==NULL){
+                                    if (virusNames.getInfo(virus) == NULL) {
                                         virusNames.insertNode(virus);
                                         virusNames.increment();
                                     }
@@ -129,33 +128,34 @@ int main(int argc, char *argv[]){
                                     break;
                             }
                             start = end + 1;
-                            end = line.find(' ',start);
+                            end = line.find(' ', start);
                             counter++;
                         }
                         currRecord = citizenData.getEntry(id);
-                        if (currRecord != NULL){
-                            if (currRecord->getName() != name or *currRecord->getCountry()!=country or currRecord->getAge() != age){
+                        if (currRecord != NULL) {
+                            if (currRecord->getName() != name or *currRecord->getCountry() != country or
+                                currRecord->getAge() != age) {
                                 faultyRecord = true;
                             }
                         }
-                        if (isVaccinated == "NO" or faultyRecord){
+                        if (isVaccinated == "NO" or faultyRecord) {
 //                            cout << "Error in Record: " << line << endl;
                             continue;
                         }
-                        if (counter == 6){
-                            data = line.substr(start,end-start);
-                            if (data == "NO"){
+                        if (counter == 6) {
+                            data = line.substr(start, end - start);
+                            if (data == "NO") {
                                 isVaccinated = data;
                                 date = "0-0-0000";
                             }
                         }
-                        if (counter == 7 and isVaccinated == "YES"){
-                            citizenFilters.addToFilter(virus,to_string(id));
-                            data = line.substr(start,end-start);
+                        if (counter == 7 and isVaccinated == "YES") {
+                            citizenFilters.addToFilter(virus, to_string(id));
+                            data = line.substr(start, end - start);
                             date = data;
                         }
-                        if (currRecord == NULL){
-                            citizenData.insertElement(id,name,countries.getInfo(country),age);
+                        if (currRecord == NULL) {
+                            citizenData.insertElement(id, name, countries.getInfo(country), age);
 //                            countries.increasePopulation(country);
                         }
 //                        if (citizenVaccines.getVaccinateInfo(currRecord->getId(),virus) == "-1"){
@@ -171,35 +171,47 @@ int main(int argc, char *argv[]){
             }
 //            cout << "Closing Directory." << endl;
             closedir(dir_ptr);
-            length=virusNames.getCapacity();
-            if ((write(fd1, &length, sizeof(int))) == -1) {
+        }
+    }
+    length=virusNames.getCapacity();
+    if ((write(fd1, &length, sizeof(int))) == -1) {
+        perror("Error in Writing");
+        exit(5);
+    }
+    for (j=0;j<length;j++){
+        virus = virusNames.getEntry(j+1);
+        counter = virus.length();
+        if ((write(fd1,&counter,sizeof(int))) == -1) {
+            perror("Error in Writing");
+            exit(5);
+        }
+        if ((write(fd1,virus.c_str(),counter)) == -1) {
+            perror("Error in Writing");
+            exit(5);
+        }
+        filter=citizenFilters.getFilter(virus);
+        if(argv[0][7]=='0'){
+            cout << virus << " CHILD " << getpid() << endl;
+            for(int c=0;c<BLOOMSIZE/sizeof(int);c++){
+                cout << filter[c] << " ";
+            }
+            cout << endl;
+        }
+        counter=0;
+        loc=BUFFSIZE/sizeof(int);
+        while(counter<BLOOMSIZE/BUFFSIZE){
+            if ((write(fd1,&filter[counter*loc],BUFFSIZE)) == -1) {
                 perror("Error in Writing");
                 exit(5);
             }
-            for (j=0;j<length;j++){
-                virus = virusNames.getEntry(j+1);
-                counter = virus.length();
-                if ((write(fd1,&counter,sizeof(int))) == -1) {
-                    perror("Error in Writing");
-                    exit(5);
-                }
-                if ((write(fd1,virus.c_str(),counter)) == -1) {
-                    perror("Error in Writing");
-                    exit(5);
-                }
-                filter=citizenFilters.getFilter(virus);
-                counter=0;
-                loc=BUFFSIZE/sizeof(int);
-                while(counter<BLOOMSIZE/BUFFSIZE){
-                    if ((write(fd1,&filter[counter*loc],BUFFSIZE)) == -1) {
-                        perror("Error in Writing");
-                        exit(5);
-                    }
-                    counter++;
-                }
-            }
+            counter++;
         }
     }
+//    int kati=0;
+//    if ((write(fd1,&kati,sizeof(int))) == -1) {
+//        perror("Error in Writing");
+//        exit(5);
+//    }
 //    while(true){
 //        pause();
 //        switch (sig_flag) {

@@ -18,8 +18,8 @@ using namespace std;
 #define NUM 3
 #define DIRLEN 20
 #define TARGETDIR "../CountryLogs"
-#define BUFFSIZE 500
-#define BLOOMSIZE 1000
+#define BUFFSIZE 100
+#define BLOOMSIZE 333
 
 void catchCHLD(int);
 void catchINT(int);
@@ -142,7 +142,6 @@ int main(){
                 msgbuf[length]='\0';
                 virus.assign(msgbuf);
                 int* filter = new int[BLOOMSIZE/sizeof(int)];
-                int* tmp;
                 length=0;
                 loc=BUFFSIZE/sizeof(int);
                 while(length<BLOOMSIZE/BUFFSIZE){
@@ -157,9 +156,24 @@ int main(){
 //                    cout << "Read Filter" << endl;
                     length++;
                 }
+                if (i==0){
+                    cout << virus << endl;
+                    for(int c=0;c<BLOOMSIZE/sizeof(int);c++){
+                        cout << filter[c] << " ";
+                    }
+                    cout << endl;
+                }
             }
         }
     }
+//    int kati;
+//    for (int c=0;c<NUM;c++){
+//        if (read(fd[c+NUM],&kati,sizeof(int)) < 0) {
+//            perror(" problem in reading ");
+//            exit(6);
+//        }
+//        cout << kati << endl;
+//    }
 //    for (i=0;i<NUM;i++) {
 //        kill(pid[i],SIGQUIT);
 //    }
@@ -180,10 +194,10 @@ int main(){
 //            }
 //        }
 //    }
-    cout << citizenFilter[0]->probInFilter("9058","Salivirus") << endl;
-    cout << citizenFilter[0]->probInFilter("1885","Influenza-C") << endl;
-    cout << citizenFilter[0]->probInFilter("1019","Mayaro") << endl;
-    cout << citizenFilter[0]->probInFilter("5856","Dhori-0") << endl;
+//    cout << citizenFilter[0]->probInFilter("9058","Salivirus") << endl;
+//    cout << citizenFilter[0]->probInFilter("1885","Influenza-C") << endl;
+//    cout << citizenFilter[0]->probInFilter("1019","Mayaro") << endl;
+//    cout << citizenFilter[0]->probInFilter("5856","Dhori-0") << endl;
     for (i=0;i<NUM;i++){
         wait(NULL);
     }
