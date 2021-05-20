@@ -178,6 +178,14 @@ string* InfoList::getInfo(string s1) {
     return NULL;
 }
 
+void InfoList::increment() {
+    entriesNum++;
+}
+
+int InfoList::getCapacity() {
+    return entriesNum;
+}
+
 InfoList::~InfoList() {
     if (head==NULL){
         return;

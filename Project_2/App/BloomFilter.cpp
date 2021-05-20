@@ -1,4 +1,6 @@
 #include "BloomFilter.h"
+#include <iostream>
+using namespace std;
 
 BloomFilter::BloomFilter(int sizeInBytes, int no_hashes) {
     filterSize = sizeInBytes / 4;
@@ -7,6 +9,12 @@ BloomFilter::BloomFilter(int sizeInBytes, int no_hashes) {
     for (int i=0;i<filterSize;i++){
         filter[i]=0;
     }
+}
+
+BloomFilter::BloomFilter(int sizeInBytes, int no_hashes, int* filter1) {
+    filterSize = sizeInBytes / 4;
+    num_hashes = no_hashes;
+    filter = filter1;
 }
 
 void BloomFilter::addToFilter(string str) {
@@ -30,6 +38,10 @@ bool BloomFilter::probInFilter(string str) {
     return true;
 }
 
+int* BloomFilter::getFilter() {
+    return filter;
+}
+
 BloomFilter::~BloomFilter() {
     delete[] filter;
 }
@@ -37,6 +49,12 @@ BloomFilter::~BloomFilter() {
 BloomNode::BloomNode(string virusName,int size, int no_hashes) {
     virus = virusName;
     filter = new BloomFilter(size,no_hashes);
+    next = NULL;
+}
+
+BloomNode::BloomNode(string virusName,int size, int no_hashes, int* filter1) {
+    virus = virusName;
+    filter = new BloomFilter(size,no_hashes,filter1);
     next = NULL;
 }
 
@@ -66,6 +84,21 @@ void BloomList::addToFilter(string virusName, string str) {
     head = new_node;
 }
 
+void BloomList::addFilter(string virusName, int* filter1) {
+    BloomNode* tmp = head;
+    while (tmp!=NULL){
+        if (tmp->virus == virusName){
+            //replace old with new
+            return;
+        }
+        tmp = tmp->next;
+    }
+    BloomNode* new_node = new BloomNode(virusName,filterSize,num_hashes,filter1);
+    tmp = head;
+    new_node->next = tmp;
+    head = new_node;
+}
+
 int BloomList::probInFilter(string str,string virusName) {
     BloomNode* tmp = head;
     while (tmp!=NULL)
@@ -80,6 +113,18 @@ int BloomList::probInFilter(string str,string virusName) {
         }
         tmp = tmp->next;
     }
+}
+
+int* BloomList::getFilter(string virusName) {
+    BloomNode* tmp = head;
+    while (tmp!=NULL)
+    {
+        if (tmp->virus == virusName){
+            return tmp->filter->getFilter();
+        }
+        tmp = tmp->next;
+    }
+    return NULL;
 }
 
 BloomList::~BloomList() {

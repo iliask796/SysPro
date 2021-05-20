@@ -3,54 +3,73 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 #include "CitizenRecords.h"
 #include "BloomFilter.h"
 using namespace std;
 
 #define RECORDTABLESIZE 100
 #define BUFFSIZE 500
+#define BLOOMSIZE 1000
+
+int sig_flag;
+void catchINT(int);
+void catchUSR1(int);
 
 int main(int argc, char *argv[]){
-    int fd,entriesNum,i,length,start,end,counter,id,age;
+    static struct sigaction act1,act2;
+    act1.sa_handler=catchINT;
+    act2.sa_handler=catchUSR1;
+    sigfillset(&(act1.sa_mask));
+    sigfillset(&(act2.sa_mask));
+    sigaction(SIGINT,&act1,NULL);
+    sigaction(SIGQUIT,&act1,NULL);
+    sigaction(SIGUSR1,&act2,NULL);
+    int fd0,fd1,entriesNum,i,j,length,start,end,counter,id,age,loc;
     char msgbuf[BUFFSIZE+1];
     string inputdir,subdir,line,filePath,name,country,virus,isVaccinated,date,data;
+    int* filter;
     ifstream countryFile;
     DIR* dir_ptr;
     struct dirent* direntp;
     cout << "Hello World" << endl;
-
     Record* currRecord;
     bool faultyRecord;
     InfoList countries;
     countries.setParameters(0);
+    InfoList virusNames;
+    virusNames.setParameters(0);
     RecordTable citizenData(RECORDTABLESIZE);
-    int bloomSize = 100000;
+    int bloomSize = BLOOMSIZE;
     BloomList citizenFilters(bloomSize,3);
 //    VirusSkipList citizenVaccines(3);
-
     sleep(2);
-    if ((fd= open(argv[0], O_RDWR)) < 0) {
+    if ((fd0= open(argv[0], O_RDWR)) < 0) {
         perror(" fifo open problem ");
         exit(3);
     }
-    if (read(fd,msgbuf,BUFFSIZE) < 0) {
+    if ((fd1= open(argv[1], O_RDWR)) < 0) {
+        perror(" fifo open problem ");
+        exit(3);
+    }
+    if (read(fd0, msgbuf, BUFFSIZE) < 0) {
         perror(" problem in reading ");
         exit(5);
     }
     inputdir.assign(msgbuf);
-    if (read(fd,msgbuf,sizeof(int)) < 0) {
+    if (read(fd0, msgbuf, sizeof(int)) < 0) {
         perror(" problem in reading ");
         exit(5);
     }
-    cout << "This is process: " << getpid() << endl;
     entriesNum = *msgbuf;
+    cout << "This is process: " << getpid() << endl;
     for (i=1;i<=entriesNum;i++){
-        if (read(fd, msgbuf, sizeof(int)) < 0) {
+        if (read(fd0, msgbuf, sizeof(int)) < 0) {
             perror(" problem in reading ");
             exit(5);
         }
         length=*msgbuf;
-        if (read(fd,msgbuf,length) < 0) {
+        if (read(fd0, msgbuf, length) < 0) {
             perror(" problem in reading ");
             exit(5);
         }
@@ -90,6 +109,7 @@ int main(int argc, char *argv[]){
                                     country = data;
                                     if (countries.getInfo(country)==NULL){
                                         countries.insertNode(country);
+                                        countries.increment();
                                     }
                                     break;
                                 case 4:
@@ -97,9 +117,10 @@ int main(int argc, char *argv[]){
                                     break;
                                 case 5:
                                     virus = data;
-//                                    if (virusNames.getInfo(virus)==NULL){
-//                                        virusNames.insertNode(virus);
-//                                    }
+                                    if (virusNames.getInfo(virus)==NULL){
+                                        virusNames.insertNode(virus);
+                                        virusNames.increment();
+                                    }
                                     break;
                                 case 6:
                                     isVaccinated = data;
@@ -150,7 +171,64 @@ int main(int argc, char *argv[]){
             }
 //            cout << "Closing Directory." << endl;
             closedir(dir_ptr);
+            length=virusNames.getCapacity();
+            if ((write(fd1, &length, sizeof(int))) == -1) {
+                perror("Error in Writing");
+                exit(5);
+            }
+            for (j=0;j<length;j++){
+                virus = virusNames.getEntry(j+1);
+                counter = virus.length();
+                if ((write(fd1,&counter,sizeof(int))) == -1) {
+                    perror("Error in Writing");
+                    exit(5);
+                }
+                if ((write(fd1,virus.c_str(),counter)) == -1) {
+                    perror("Error in Writing");
+                    exit(5);
+                }
+                filter=citizenFilters.getFilter(virus);
+                counter=0;
+                loc=BUFFSIZE/sizeof(int);
+                while(counter<BLOOMSIZE/BUFFSIZE){
+                    if ((write(fd1,&filter[counter*loc],BUFFSIZE)) == -1) {
+                        perror("Error in Writing");
+                        exit(5);
+                    }
+                    counter++;
+                }
+            }
         }
     }
+//    while(true){
+//        pause();
+//        switch (sig_flag) {
+//            case 1:
+//                i=countries.getCapacity();
+//                for (j=0;j<i;j++){
+//                    cout << countries.getEntry(j+1) << endl;
+//                }
+//                break;
+//            case 2:
+//                cout << "New File Notification. Make new Bloom Filters." << endl;
+//                break;
+//            default:
+//                break;
+//        }
+//    }
+    pause();
+    cout << "Ending" << endl;
+    close(fd0);
+    close(fd1);
 	return 0;
+}
+
+void catchINT(int sig_no){
+    cout << "CAUGHT with: " << sig_no << endl;
+    sig_flag = 1;
+}
+
+void catchUSR1(int sig_no){
+    cout << "CAUGHT with: " << sig_no << endl;
+    sig_flag = 2;
 }

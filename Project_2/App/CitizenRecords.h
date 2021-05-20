@@ -67,6 +67,8 @@ public:
     void insertNode(string);
     string getEntry(int);
     string* getInfo(string);
+    void increment();
+    int getCapacity();
     ~InfoList();
     friend class InfoTable;
 };

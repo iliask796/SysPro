@@ -7,8 +7,10 @@ private:
     int num_hashes;
 public:
     BloomFilter(int,int);
+    BloomFilter(int,int,int*);
     void addToFilter(string);
     bool probInFilter(string);
+    int* getFilter();
     ~BloomFilter();
 };
 
@@ -19,6 +21,7 @@ private:
     BloomNode* next;
 public:
     BloomNode(string,int,int);
+    BloomNode(string,int,int,int*);
     ~BloomNode();
     friend class BloomList;
 };
@@ -31,6 +34,8 @@ private:
 public:
     BloomList(int,int);
     void addToFilter(string,string);
+    void addFilter(string,int*);
     int probInFilter(string,string);
+    int* getFilter(string);
     ~BloomList();
 };
