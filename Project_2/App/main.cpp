@@ -18,8 +18,8 @@ using namespace std;
 #define NUM 3
 #define DIRLEN 20
 #define TARGETDIR "../CountryLogs"
-#define BUFFSIZE 100
-#define BLOOMSIZE 333
+#define BUFFSIZE 200
+#define BLOOMSIZE 1000
 
 void catchCHLD(int);
 void catchINT(int);
@@ -152,17 +152,22 @@ int main(){
                     for (k=0;k<loc;k++){
                         filter[k+length*loc]=(msgbuf2[k]);
                     }
-                    citizenFilter[i]->addFilter(virus,filter);
 //                    cout << "Read Filter" << endl;
                     length++;
-                }
-                if (i==0){
-                    cout << virus << endl;
-                    for(int c=0;c<BLOOMSIZE/sizeof(int);c++){
-                        cout << filter[c] << " ";
+                    if(length==BLOOMSIZE/BUFFSIZE and BLOOMSIZE%BUFFSIZE>0){
+                        if (read(fd[i+NUM],msgbuf2,BLOOMSIZE%BUFFSIZE) < 0) {
+                            perror(" problem in reading ");
+                            exit(6);
+                        }
+                        for (k=0;k<loc;k++){
+                            filter[k+length*loc]=(msgbuf2[k]);
+                            if(k==(BLOOMSIZE%BUFFSIZE)/sizeof(int)){
+                                break;
+                            }
+                        }
                     }
-                    cout << endl;
                 }
+                citizenFilter[i]->addFilter(virus,filter);
             }
         }
     }
@@ -194,10 +199,10 @@ int main(){
 //            }
 //        }
 //    }
-//    cout << citizenFilter[0]->probInFilter("9058","Salivirus") << endl;
-//    cout << citizenFilter[0]->probInFilter("1885","Influenza-C") << endl;
-//    cout << citizenFilter[0]->probInFilter("1019","Mayaro") << endl;
-//    cout << citizenFilter[0]->probInFilter("5856","Dhori-0") << endl;
+    cout << citizenFilter[0]->probInFilter("9058","Salivirus") << endl;
+    cout << citizenFilter[0]->probInFilter("1885","Influenza-C") << endl;
+    cout << citizenFilter[0]->probInFilter("1019","Mayaro") << endl;
+    cout << citizenFilter[0]->probInFilter("5856","Dhori-0") << endl;
     for (i=0;i<NUM;i++){
         wait(NULL);
     }

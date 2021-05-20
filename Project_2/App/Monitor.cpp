@@ -9,8 +9,8 @@
 using namespace std;
 
 #define RECORDTABLESIZE 100
-#define BUFFSIZE 100
-#define BLOOMSIZE 333
+#define BUFFSIZE 200
+#define BLOOMSIZE 1000
 
 int sig_flag;
 void catchINT(int);
@@ -190,13 +190,6 @@ int main(int argc, char *argv[]){
             exit(5);
         }
         filter=citizenFilters.getFilter(virus);
-        if(argv[0][7]=='0'){
-            cout << virus << " CHILD " << getpid() << endl;
-            for(int c=0;c<BLOOMSIZE/sizeof(int);c++){
-                cout << filter[c] << " ";
-            }
-            cout << endl;
-        }
         counter=0;
         loc=BUFFSIZE/sizeof(int);
         while(counter<BLOOMSIZE/BUFFSIZE){
@@ -205,6 +198,12 @@ int main(int argc, char *argv[]){
                 exit(5);
             }
             counter++;
+            if(counter==BLOOMSIZE/BUFFSIZE and BLOOMSIZE%BUFFSIZE>0){
+                if ((write(fd1,&filter[counter*loc],BLOOMSIZE%BUFFSIZE)) == -1) {
+                    perror("Error in Writing");
+                    exit(5);
+                }
+            }
         }
     }
 //    int kati=0;
