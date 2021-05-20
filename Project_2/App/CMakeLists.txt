@@ -3,4 +3,6 @@ project(SysPro/Project_2)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(App main.cpp)
+add_executable(App main.cpp CitizenRecords.cpp CitizenRecords.h HashUtil.cpp HashUtil.h BloomFilter.cpp BloomFilter.h)
+
+add_executable(Monitor Monitor.cpp CitizenRecords.cpp CitizenRecords.h HashUtil.cpp HashUtil.h BloomFilter.cpp BloomFilter.h)
