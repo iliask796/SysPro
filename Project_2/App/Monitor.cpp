@@ -15,6 +15,7 @@ void catchINT(int);
 void catchUSR1(int);
 
 int main(int argc, char *argv[]){
+    //Set signal handling
     static struct sigaction act1,act2;
     act1.sa_handler=catchINT;
     act2.sa_handler=catchUSR1;
@@ -23,6 +24,7 @@ int main(int argc, char *argv[]){
     sigaction(SIGINT,&act1,NULL);
     sigaction(SIGQUIT,&act1,NULL);
     sigaction(SIGUSR1,&act2,NULL);
+    //Start necessary actions for Monitor
     int fd0,fd1,entriesNum,i,j,length,start,end,counter,id,age,loc;
     string inputdir,subdir,line,filePath,name,country,virus,isVaccinated,date,data;
     int* filter;
@@ -39,6 +41,7 @@ int main(int argc, char *argv[]){
     RecordTable citizenData(RECORDTABLESIZE);
 //    VirusSkipList citizenVaccines(3);
     sleep(2);
+    //Open both pipes
     if ((fd0= open(argv[0], O_RDWR)) < 0) {
         perror(" fifo open problem ");
         exit(2);
@@ -47,6 +50,7 @@ int main(int argc, char *argv[]){
         perror(" fifo open problem ");
         exit(2);
     }
+    //Read buffsize and bloomsize from main program
     int size[1];
     if (read(fd0,size,sizeof(int)) < 0) {
         perror(" problem in reading ");
@@ -60,11 +64,13 @@ int main(int argc, char *argv[]){
     }
     int bloomSize = *size;
     BloomList citizenFilters(bloomSize,3);
+    //Read input directory
     if (read(fd0, msgbuf, buffSize) < 0) {
         perror(" problem in reading ");
         exit(6);
     }
     inputdir.assign(msgbuf);
+    //Read amount of folders that need to handle
     if (read(fd0, msgbuf, sizeof(int)) < 0) {
         perror(" problem in reading ");
         exit(6);
@@ -72,6 +78,7 @@ int main(int argc, char *argv[]){
     entriesNum = *msgbuf;
     cout << "This is process: " << getpid() << endl;
     for (i=1;i<=entriesNum;i++) {
+        //Ready country folder names
         if (read(fd0, msgbuf, sizeof(int)) < 0) {
             perror(" problem in reading ");
             exit(6);
@@ -83,10 +90,12 @@ int main(int argc, char *argv[]){
         }
         msgbuf[length] = '\0';
         subdir.assign(msgbuf);
+        //Open the subdirectory
         subdir = inputdir + "/" + subdir;
         if ((dir_ptr = opendir(subdir.c_str())) == NULL) {
             cout << stderr << " cannot open " << subdir << endl;
         } else {
+            //Access each file and initiate data structures
 //            cout << "Directory " << msgbuf << " successfully opened." << endl;
             while ((direntp = readdir(dir_ptr)) != NULL) {
                 if (direntp->d_name[0] != '.') {
@@ -182,10 +191,12 @@ int main(int argc, char *argv[]){
         }
     }
     length=virusNames.getCapacity();
+    //Send amount of viruses found
     if ((write(fd1, &length, sizeof(int))) == -1) {
         perror("Error in Writing");
         exit(5);
     }
+    //Send each filter for every virus
     for (j=0;j<length;j++){
         virus = virusNames.getEntry(j+1);
         counter = virus.length();
@@ -214,11 +225,13 @@ int main(int argc, char *argv[]){
             }
         }
     }
+    //Send ready state message
     int ready=1;
     if ((write(fd1,&ready,sizeof(int))) == -1) {
         perror("Error in Writing");
         exit(5);
     }
+    //Wait until something happens
     bool alive=true;
     while(alive){
         pause();
