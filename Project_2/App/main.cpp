@@ -43,11 +43,14 @@ int main(){
     DIR* dir_ptr;
     struct dirent* direntp;
     InfoTable DirList(NUM);
+    InfoList virusNames;
+    virusNames.setParameters(0);
     int bloomSize = BLOOMSIZE;
     BloomList* citizenFilter[NUM];
     for (i=0;i<NUM;i++){
         citizenFilter[i] = new BloomList(bloomSize,3);
     }
+    //make and open pipes (2 for each process)
     for(i=0;i<NUM*2;i++){
         strcpy(FIFO[i],("my_fifo"+to_string(i)).c_str());
         if ( mkfifo(FIFO[i],PERMS) == -1 ) {
@@ -61,6 +64,7 @@ int main(){
             exit(2);
         }
     }
+    //fork processes and exec monitor
     cout << "#Parent#" << " process ID: " << getpid() << ", parent ID: " << getppid() << endl;
     for (i=0;i<NUM;i++){
         childpid = fork();
@@ -80,6 +84,7 @@ int main(){
         pid[i]=childpid;
         sleep(1);
     }
+    //store folder names and divide them for each process
     if ( (dir_ptr = opendir (dirname)) == NULL ) {
         cout << stderr << " cannot open " << dirname << endl;
     }
@@ -98,6 +103,7 @@ int main(){
         }
 //        cout << "Closing Directory." << endl;
         closedir(dir_ptr);
+        //transfer directory names over pipes
         for (i=0;i<NUM;i++){
             count = DirList.getCapacity(i);
             if ((write(fd[i],dirname,BUFFSIZE)) == -1) {
@@ -123,6 +129,7 @@ int main(){
         }
         sleep(2);
         cout << "This is the Parent Process" << endl;
+        //read filters
         for (i=0;i<NUM;i++){
             if (read(fd[i+NUM],msgbuf,sizeof(int)) < 0) {
                 perror(" problem in reading ");
@@ -141,6 +148,10 @@ int main(){
                 }
                 msgbuf[length]='\0';
                 virus.assign(msgbuf);
+                if (virusNames.getInfo(virus) == NULL) {
+                    virusNames.insertNode(virus);
+                    virusNames.increment();
+                }
                 int* filter = new int[BLOOMSIZE/sizeof(int)];
                 length=0;
                 loc=BUFFSIZE/sizeof(int);
@@ -171,54 +182,154 @@ int main(){
             }
         }
     }
-//    int kati;
-//    for (int c=0;c<NUM;c++){
-//        if (read(fd[c+NUM],&kati,sizeof(int)) < 0) {
-//            perror(" problem in reading ");
-//            exit(6);
-//        }
-//        cout << kati << endl;
-//    }
-//    for (i=0;i<NUM;i++) {
-//        kill(pid[i],SIGQUIT);
-//    }
-//    if (term_flag){
-//        cout << "Killing the kids." << endl;
-//        for(i=0;i<NUM;i++){
-//            kill(pid[i],SIGKILL);
-//            for(j=1;j<=DirList.getCapacity(i);j++){
-//                cout << "These are the countries of the main process:" << endl;
-//                cout << DirList.getEntry(i,j) << endl;
-//            }
-//        }
-//    }
-//    if (child_flag){
-//        for(i=0;i<NUM;i++){
-//            if (pid[i]==child2){
-//                cout << "A child terminated but we can bring it back." << endl;
-//            }
-//        }
-//    }
-    cout << citizenFilter[0]->probInFilter("9058","Salivirus") << endl;
-    cout << citizenFilter[0]->probInFilter("1885","Influenza-C") << endl;
-    cout << citizenFilter[0]->probInFilter("1019","Mayaro") << endl;
-    cout << citizenFilter[0]->probInFilter("5856","Dhori-0") << endl;
-    for (i=0;i<NUM;i++){
-        wait(NULL);
+    int ready;
+    int progress=0;
+    //get ready from every process
+    for (int c=0;c<NUM;c++){
+        if (read(fd[c+NUM],&ready,sizeof(int)) < 0) {
+            perror(" problem in reading ");
+            exit(6);
+        }
+        if (ready==1){
+            progress++;
+        }
+    }
+    if (progress==NUM){
+        bool quit = false;
+        CommandInput cmdi(9);
+        int data;
+        string input1;
+        cout << "*** Type /help for available commands ***" << endl;
+        while (!quit) {
+            cmdi.clear();
+            if (term_flag){
+                cout << "Killing the kids." << endl;
+                cout << "These are the countries of the main process:" << endl;
+                for(i=0;i<NUM;i++){
+                    kill(pid[i],SIGKILL);
+                    sleep(1);
+                    for(j=1;j<=DirList.getCapacity(i);j++){
+                        cout << DirList.getEntry(i,j) << endl;
+                    }
+                }
+                return -1;
+            }
+            if (child_flag){
+                for(i=0;i<NUM;i++){
+                    if (pid[i]==child2){
+                        cout << "Forking Process " << child2 << " again." << endl;
+                    }
+                }
+                child_flag=false;
+            }
+            cout << "*** Waiting For Action ***" << endl;
+            getline(cin, input1);
+            cmdi.insertCommand(input1);
+            if (cmdi.getWord(0) == "/quit") {
+                quit = true;
+            }
+            else if (cmdi.getWord(0) == "/help") {
+                cout << "*** Listing available commands *** " << endl;
+                cout << "/travelRequest citizenID date countryFrom countryTo virusName" << endl;
+                cout << "/travelStats virusName date1 date2 [country]" << endl << "/addVaccinationRecords country" << endl;
+                cout << "/searchVaccinationStatus citizenID" << endl;
+                cout << "/quit" << endl;
+                cout << "Caution: ID -> only numbers, date_format: 4-7-2020 and anything in [] -> optional" << endl;
+            }
+            else if (cmdi.getWord(0) == "/travelRequest"){
+                if (cmdi.getCount()!=6){
+                    cout << "Error: Arguments Mismatch. Type /help for more info." << endl;
+                    continue;
+                }
+                if (!(cmdi.isDigit(1))){
+                    cout << "Error: Wrong ID format. Only numbers allowed." << endl;
+                    continue;
+                }
+                if (!cmdi.isDate(2)){
+                    cout << "Error: Wrong DATE format. DD-MM-YYYY allowed." << endl;
+                    continue;
+                }
+                if (virusNames.getInfo(cmdi.getWord(5))==NULL){
+                    cout << "Error: Virus Not Found." << endl;
+                    continue;
+                }
+                data=DirList.getInfo(cmdi.getWord(3));
+                if (data==-1){
+                    cout << "Error: Country Not Found." << endl;
+                    continue;
+                }
+                else{
+                    cout << "Country handled by process: " << pid[data] << endl;
+                }
+                cout << "TODO" << endl;
+            }
+            else if (cmdi.getWord(0) == "/addVaccinationRecords"){
+                if (cmdi.getCount()!=2){
+                    cout << "Error: Arguments Mismatch. Type /help for more info." << endl;
+                    continue;
+                }
+                data=DirList.getInfo(cmdi.getWord(1));
+                if (data==-1){
+                    cout << "Error: Country Not Found." << endl;
+                    continue;
+                }
+                else{
+                    cout << "Country handled by process: " << pid[data] << endl;
+                    kill(pid[data],SIGUSR1);
+                    sleep(1);
+                }
+            }
+            else if (cmdi.getWord(0) == "/test") {
+                cout << citizenFilter[0]->probInFilter("9058","Salivirus") << endl;
+                cout << citizenFilter[0]->probInFilter("1885","Influenza-C") << endl;
+                cout << citizenFilter[0]->probInFilter("1019","Mayaro") << endl;
+                cout << citizenFilter[0]->probInFilter("5856","Dhori-0") << endl;
+            }
+            else if (cmdi.getWord(0) == "/test2"){
+//                for (i=0;i<NUM;i++) {
+//                    kill(pid[i],SIGINT);
+//                }
+                kill(pid[0],SIGINT);
+                sleep(1);
+            }
+            else if (cmdi.getWord(0) == "/test3") {
+                raise(SIGINT);
+            }
+            cin.clear();
+            fflush(stdin);
+        }
+    }
+    else {
+        cout << "Error: Process initial data transfer was not successful." << endl;
     }
     for (i=0;i<NUM*2;i++){
         close(fd[i]);
+    }
+    cout << "Killing the kids." << endl;
+    cout << "These are the countries of the main process:" << endl;
+    for(i=0;i<NUM;i++){
+        kill(pid[i],SIGKILL);
+        sleep(1);
+        for(j=1;j<=DirList.getCapacity(i);j++){
+            cout << DirList.getEntry(i,j) << endl;
+        }
     }
     exit(0);
 }
 
 void catchCHLD(int signo){
-    cout << "CAUGHT with: " << signo << endl;
-    child2 = wait(NULL);
+    int status;
+    cout << "@M CHLD CAUGHT with: " << signo  << " (";
+    child2 = wait(&status);
+    cout << child2 << "," << status << ")" << endl;
     child_flag=true;
 }
 
 void catchINT(int signo){
-    cout << "CAUGHT with: " << signo << endl;
+    cout << "@M INT/QUIT CAUGHT with: " << signo << endl;
     term_flag=true;
 }
+
+// /travelRequest 123 11-11-1111 Greece countryTo H1N1
+// 1:USA,UK,Korea || 2:Germany,Japan || 3:Greece,Italy
+// /addVaccinationRecords USA

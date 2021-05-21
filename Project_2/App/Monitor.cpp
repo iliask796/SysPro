@@ -46,32 +46,32 @@ int main(int argc, char *argv[]){
     sleep(2);
     if ((fd0= open(argv[0], O_RDWR)) < 0) {
         perror(" fifo open problem ");
-        exit(3);
+        exit(2);
     }
     if ((fd1= open(argv[1], O_RDWR)) < 0) {
         perror(" fifo open problem ");
-        exit(3);
+        exit(2);
     }
     if (read(fd0, msgbuf, BUFFSIZE) < 0) {
         perror(" problem in reading ");
-        exit(5);
+        exit(6);
     }
     inputdir.assign(msgbuf);
     if (read(fd0, msgbuf, sizeof(int)) < 0) {
         perror(" problem in reading ");
-        exit(5);
+        exit(6);
     }
     entriesNum = *msgbuf;
     cout << "This is process: " << getpid() << endl;
     for (i=1;i<=entriesNum;i++) {
         if (read(fd0, msgbuf, sizeof(int)) < 0) {
             perror(" problem in reading ");
-            exit(5);
+            exit(6);
         }
         length = *msgbuf;
         if (read(fd0, msgbuf, length) < 0) {
             perror(" problem in reading ");
-            exit(5);
+            exit(6);
         }
         msgbuf[length] = '\0';
         subdir.assign(msgbuf);
@@ -206,40 +206,41 @@ int main(int argc, char *argv[]){
             }
         }
     }
-//    int kati=0;
-//    if ((write(fd1,&kati,sizeof(int))) == -1) {
-//        perror("Error in Writing");
-//        exit(5);
-//    }
-//    while(true){
-//        pause();
-//        switch (sig_flag) {
-//            case 1:
-//                i=countries.getCapacity();
-//                for (j=0;j<i;j++){
-//                    cout << countries.getEntry(j+1) << endl;
-//                }
-//                break;
-//            case 2:
-//                cout << "New File Notification. Make new Bloom Filters." << endl;
-//                break;
-//            default:
-//                break;
-//        }
-//    }
-    pause();
-    cout << "Ending" << endl;
+    int ready=1;
+    if ((write(fd1,&ready,sizeof(int))) == -1) {
+        perror("Error in Writing");
+        exit(5);
+    }
+    bool alive=true;
+    while(alive){
+        pause();
+        switch (sig_flag) {
+            case 1:
+                i=countries.getCapacity();
+                for (j=0;j<i;j++){
+                    cout << countries.getEntry(j+1) << endl;
+                }
+                alive=false;
+                break;
+            case 2:
+                cout << "New File Notification. Make new Bloom Filters." << endl;
+                break;
+            default:
+                break;
+        }
+    }
+    cout << "Ending Process " << getpid() << "." << endl;
     close(fd0);
     close(fd1);
 	return 0;
 }
 
 void catchINT(int sig_no){
-    cout << "CAUGHT with: " << sig_no << endl;
+    cout << "@C INT/QUIT CAUGHT with: " << sig_no << endl;
     sig_flag = 1;
 }
 
 void catchUSR1(int sig_no){
-    cout << "CAUGHT with: " << sig_no << endl;
+    cout << "@C USR1 CAUGHT with: " << sig_no << endl;
     sig_flag = 2;
 }

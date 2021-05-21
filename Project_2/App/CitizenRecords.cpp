@@ -235,6 +235,17 @@ string InfoTable::getEntry(int pNum, int place) {
     return "-1";
 }
 
+int InfoTable::getInfo(string s1) {
+    string* tmp;
+    for (int i=0;i<tableSize;i++){
+        tmp = table[i].getInfo(s1);
+        if (tmp != NULL){
+            return i;
+        }
+    }
+    return -1;
+}
+
 InfoTable::~InfoTable() {
     delete[] table;
 }

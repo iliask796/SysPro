@@ -82,5 +82,6 @@ public:
     void insertNode(int,string);
     int getCapacity(int);
     string getEntry(int,int);
+    int getInfo(string);
     ~InfoTable();
 };
