@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/wait.h>
-#include "CitizenRecords.h"
 #include "BloomFilter.h"
+#include "SkipList.h"
 using namespace std;
 
 #define RECORDTABLESIZE 100
@@ -13,17 +13,21 @@ using namespace std;
 int sig_flag=0;
 void catchINT(int);
 void catchUSR1(int);
+void catchUSR2(int);
 
 int main(int argc, char *argv[]){
     //Set signal handling
-    static struct sigaction act1,act2;
+    static struct sigaction act1,act2,act3;
     act1.sa_handler=catchINT;
     act2.sa_handler=catchUSR1;
+    act3.sa_handler=catchUSR2;
     sigfillset(&(act1.sa_mask));
     sigfillset(&(act2.sa_mask));
+    sigfillset(&(act3.sa_mask));
     sigaction(SIGINT,&act1,NULL);
     sigaction(SIGQUIT,&act1,NULL);
     sigaction(SIGUSR1,&act2,NULL);
+    sigaction(SIGUSR2,&act3,NULL);
     //Start necessary actions for Monitor
     int fd0,fd1,entriesNum,i,j,length,start,end,counter,id,age,loc;
     string inputdir,subdir,line,filePath,name,country,virus,isVaccinated,date,data;
@@ -39,7 +43,7 @@ int main(int argc, char *argv[]){
     InfoList virusNames;
     virusNames.setParameters(0);
     RecordTable citizenData(RECORDTABLESIZE);
-//    VirusSkipList citizenVaccines(3);
+    VirusSkipList citizenVaccines(3);
     sleep(2);
     //Open both pipes
     if ((fd0= open(argv[0], O_RDWR)) < 0) {
@@ -51,18 +55,18 @@ int main(int argc, char *argv[]){
         exit(2);
     }
     //Read buffsize and bloomsize from main program
-    int size[1];
-    if (read(fd0,size,sizeof(int)) < 0) {
+    int info[1];
+    if (read(fd0,info,sizeof(int)) < 0) {
         perror(" problem in reading ");
         exit(6);
     }
-    int buffSize = *size;
+    int buffSize = *info;
     char msgbuf[buffSize+1];
-    if (read(fd0, size, sizeof(int)) < 0) {
+    if (read(fd0, info, sizeof(int)) < 0) {
         perror(" problem in reading ");
         exit(6);
     }
-    int bloomSize = *size;
+    int bloomSize = *info;
     BloomList citizenFilters(bloomSize,3);
     //Read input directory
     if (read(fd0, msgbuf, buffSize) < 0) {
@@ -103,14 +107,15 @@ int main(int argc, char *argv[]){
                     filePath = subdir + "/" + direntp->d_name;
                     countryFile.open(filePath.c_str());
 //                    cout << "Reading file." << endl;
-                    while (getline(countryFile, line)) {
+                    while(getline(countryFile,line))
+                    {
                         isVaccinated = "";
                         faultyRecord = false;
                         counter = 0;
                         start = 0;
                         end = line.find(' ');
-                        while (end != -1) {
-                            data = line.substr(start, end - start);
+                        while (end != -1){
+                            data = line.substr(start,end-start);
                             switch (counter) {
                                 case 0:
                                     id = atoi(data.c_str());
@@ -123,7 +128,7 @@ int main(int argc, char *argv[]){
                                     break;
                                 case 3:
                                     country = data;
-                                    if (countries.getInfo(country) == NULL) {
+                                    if (countries.getInfo(country)==NULL){
                                         countries.insertNode(country);
                                         countries.increment();
                                     }
@@ -133,7 +138,7 @@ int main(int argc, char *argv[]){
                                     break;
                                 case 5:
                                     virus = data;
-                                    if (virusNames.getInfo(virus) == NULL) {
+                                    if (virusNames.getInfo(virus)==NULL){
                                         virusNames.insertNode(virus);
                                         virusNames.increment();
                                     }
@@ -145,42 +150,36 @@ int main(int argc, char *argv[]){
                                     break;
                             }
                             start = end + 1;
-                            end = line.find(' ', start);
+                            end = line.find(' ',start);
                             counter++;
                         }
                         currRecord = citizenData.getEntry(id);
-                        if (currRecord != NULL) {
-                            if (currRecord->getName() != name or *currRecord->getCountry() != country or
-                                currRecord->getAge() != age) {
+                        if (currRecord != NULL){
+                            if (currRecord->getName() != name or *currRecord->getCountry()!=country or currRecord->getAge() != age){
                                 faultyRecord = true;
                             }
                         }
-                        if (isVaccinated == "NO" or faultyRecord) {
-//                            cout << "Error in Record: " << line << endl;
+                        if (isVaccinated == "NO" or faultyRecord){
                             continue;
                         }
-                        if (counter == 6) {
-                            data = line.substr(start, end - start);
-                            if (data == "NO") {
+                        if (counter == 6){
+                            data = line.substr(start,end-start);
+                            if (data == "NO"){
                                 isVaccinated = data;
                                 date = "0-0-0000";
                             }
                         }
-                        if (counter == 7 and isVaccinated == "YES") {
-                            citizenFilters.addToFilter(virus, to_string(id));
-                            data = line.substr(start, end - start);
+                        if (counter == 7 and isVaccinated == "YES"){
+                            citizenFilters.addToFilter(virus,to_string(id));
+                            data = line.substr(start,end-start);
                             date = data;
                         }
-                        if (currRecord == NULL) {
-                            citizenData.insertElement(id, name, countries.getInfo(country), age);
-//                            countries.increasePopulation(country);
+                        if (currRecord == NULL){
+                            currRecord = citizenData.insertElement(id,name,countries.getInfo(country),age);
                         }
-//                        if (citizenVaccines.getVaccinateInfo(currRecord->getId(),virus) == "-1"){
-//                            citizenVaccines.insert(virus, isVaccinated, currRecord, date);
-//                        }
-//                        else {
-//                            cout << "Error in Record: " << line << endl;
-//                        }
+                        if (citizenVaccines.getVaccinateInfo(currRecord->getId(),virus) == "-1"){
+                            citizenVaccines.insert(virus, isVaccinated, currRecord, date);
+                        }
                     }
 //                    cout << "Reached the end of file." << endl;
                     countryFile.close();
@@ -233,6 +232,8 @@ int main(int argc, char *argv[]){
     }
     //Wait until something happens
     bool alive=true;
+    int choice;
+    string answer;
     while(alive){
         pause();
         switch (sig_flag) {
@@ -245,6 +246,47 @@ int main(int argc, char *argv[]){
                 break;
             case 2:
                 cout << "New File Notification. Make new Bloom Filters." << endl;
+                break;
+            case 3:
+                if (read(fd0,info,sizeof(int)) < 0) {
+                    perror(" problem in reading ");
+                    exit(6);
+                }
+                choice = *info;
+                if (read(fd0,info,sizeof(int)) < 0) {
+                    perror(" problem in reading ");
+                    exit(6);
+                }
+                id = *info;
+                if (choice==0){
+                    if (read(fd0,info,sizeof(int)) < 0) {
+                        perror(" problem in reading ");
+                        exit(6);
+                    }
+                    if (read(fd0,msgbuf,*info) < 0) {
+                        perror(" problem in reading ");
+                        exit(6);
+                    }
+                    msgbuf[*info]='\0';
+                    virus.assign(msgbuf);
+                    answer = citizenVaccines.getVaccinateInfo(id,virus);
+                    length=answer.length();
+                    if ((write(fd1,&length,sizeof(int))) == -1) {
+                        perror("Error in Writing");
+                        exit(5);
+                    }
+                    if ((write(fd1,answer.c_str(),length) == -1)) {
+                        perror("Error in Writing");
+                        exit(5);
+                    }
+                }
+                else if (choice==1){
+                    cout << "Second: " << id << endl;
+                }
+                else{
+                    cout << "Unknown action." << endl;
+                }
+
                 break;
             default:
                 cout << "Caught a signal which is not being handled." << endl;
@@ -265,4 +307,9 @@ void catchINT(int sig_no){
 void catchUSR1(int sig_no){
     cout << "@C USR1 CAUGHT with: " << sig_no << endl;
     sig_flag = 2;
+}
+
+void catchUSR2(int sig_no){
+    cout << "@C USR2 CAUGHT with: " << sig_no << endl;
+    sig_flag = 3;
 }

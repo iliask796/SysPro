@@ -17,3 +17,4 @@ public:
 };
 
 int compareDates(const string&,const string&);
+int safeDateCheck(const string&,const string&);

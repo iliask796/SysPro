@@ -121,3 +121,14 @@ int compareDates(const string& date1,const string& date2) {
         }
     }
 }
+
+int safeDateCheck(const string& date1) {
+    string dateInfo1[3];
+    int i,start = 0,end = date1.find('-');
+    for (i=0;i<2;i++){
+        dateInfo1[i]= date1.substr(start,end-start);
+        start = end + 1;
+        end = date1.find('-',start);
+    }
+    dateInfo1[i]= date1.substr(start,end-start);
+}

@@ -155,7 +155,7 @@ int main(int argc,char* argv[]){
         cout << "This is the Parent Process" << endl;
         //Read filters
         for (i=0; i < monitors; i++){
-            if (read(fd[i + monitors], msgbuf, sizeof(int)) < 0) {
+            if (read(fd[i+monitors],msgbuf,sizeof(int)) < 0) {
                 perror(" problem in reading ");
                 exit(6);
             }
@@ -222,7 +222,7 @@ int main(int argc,char* argv[]){
         //If all good then get ready for input requests
         bool quit = false;
         CommandInput cmdi(9);
-        int data;
+        int data,idToCheck,choice;
         string input1;
         cout << "*** Type /help for available commands ***" << endl;
         while (!quit) {
@@ -286,7 +286,43 @@ int main(int argc,char* argv[]){
                 else{
                     cout << "Country handled by process: " << pid[data] << endl;
                 }
-                cout << "TODO" << endl;
+                if (citizenFilter[data]->probInFilter(cmdi.getWord(1),cmdi.getWord(5)) == 1){
+                    kill(pid[data],SIGUSR2);
+                    sleep(1);
+                    idToCheck=atoi(cmdi.getWord(1).c_str());
+                    choice=0;
+                    if ((write(fd[data],&choice,sizeof(int))) == -1) {
+                        perror("Error in Writing");
+                        exit(5);
+                    }
+                    if ((write(fd[data],&idToCheck,sizeof(int))) == -1) {
+                        perror("Error in Writing");
+                        exit(5);
+                    }
+                    length=cmdi.getWord(5).length();
+                    if ((write(fd[data],&length,sizeof(int))) == -1) {
+                        perror("Error in Writing");
+                        exit(5);
+                    }
+                    if ((write(fd[data],cmdi.getWord(5).c_str(),length)) == -1) {
+                        perror("Error in Writing");
+                        exit(5);
+                    }
+                    if (read(fd[data+monitors],msgbuf,sizeof(int)) < 0) {
+                        perror(" problem in reading ");
+                        exit(6);
+                    }
+                    length=*msgbuf;
+                    if (read(fd[data+monitors],msgbuf,length) < 0) {
+                        perror(" problem in reading ");
+                        exit(6);
+                    }
+                    msgbuf[length]='\0';
+
+                }
+                else{
+                    cout << "REQUEST REJECTED – YOU ARE NOT VACCINATED" << endl;
+                }
             }
             else if (cmdi.getWord(0) == "/addVaccinationRecords"){
                 if (cmdi.getCount()!=2){
@@ -302,6 +338,32 @@ int main(int argc,char* argv[]){
                     cout << "Country handled by process: " << pid[data] << endl;
                     kill(pid[data],SIGUSR1);
                     sleep(1);
+                }
+            }
+            else if (cmdi.getWord(0) == "/searchVaccinationStatus"){
+                if (cmdi.getCount()!=2){
+                    cout << "Error: Arguments Mismatch. Type /help for more info." << endl;
+                    continue;
+                }
+                if (!(cmdi.isDigit(1))){
+                    cout << "Error: Wrong ID format. Only numbers allowed." << endl;
+                    continue;
+                }
+                for(i=0;i<monitors;i++){
+                    kill(pid[i],SIGUSR2);
+                    sleep(1);
+                    idToCheck=atoi(cmdi.getWord(1).c_str());
+                    choice=1;
+                    if ((write(fd[i],&choice,sizeof(int))) == -1) {
+                        perror("Error in Writing");
+                        exit(5);
+                    }
+                    if ((write(fd[i],&idToCheck,sizeof(int))) == -1) {
+                        perror("Error in Writing");
+                        exit(5);
+                    }
+                    sleep(1);
+                    cout << "TODO" << endl;
                 }
             }
             else if (cmdi.getWord(0) == "/test") {
@@ -355,6 +417,11 @@ void catchINT(int signo){
     term_flag=true;
 }
 
-// /travelRequest 123 11-11-1111 Greece countryTo H1N1
+// ./App -m 3 -b 200 -s 1000 -i ../CountryLogs
 // 1:USA,UK,Korea || 2:Germany,Japan || 3:Greece,Italy
+// /travelRequest 123 11-11-1111 Greece countryTo H1N1
 // /addVaccinationRecords USA
+// /travelRequest 9058 11-11-1111 USA countryTo Salivirus (NO)
+// /travelRequest 1885 11-11-1111 USA countryTo Influenza-C (MAYBE)
+// /travelRequest 1019 11-11-1111 USA countryTo Mayaro (NO)
+// /travelRequest 5856 11-11-1111 USA countryTo Dhori-0 (MAYBE)
