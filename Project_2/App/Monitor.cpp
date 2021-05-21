@@ -46,11 +46,11 @@ int main(int argc, char *argv[]){
     VirusSkipList citizenVaccines(3);
     sleep(2);
     //Open both pipes
-    if ((fd0= open(argv[0], O_RDWR)) < 0) {
+    if ((fd0=open(argv[0],O_RDWR)) < 0) {
         perror(" fifo open problem ");
         exit(2);
     }
-    if ((fd1= open(argv[1], O_RDWR)) < 0) {
+    if ((fd1= open(argv[1],O_RDWR)) < 0) {
         perror(" fifo open problem ");
         exit(2);
     }
@@ -69,13 +69,13 @@ int main(int argc, char *argv[]){
     int bloomSize = *info;
     BloomList citizenFilters(bloomSize,3);
     //Read input directory
-    if (read(fd0, msgbuf, buffSize) < 0) {
+    if (read(fd0,msgbuf,buffSize) < 0) {
         perror(" problem in reading ");
         exit(6);
     }
     inputdir.assign(msgbuf);
     //Read amount of folders that need to handle
-    if (read(fd0, msgbuf, sizeof(int)) < 0) {
+    if (read(fd0,msgbuf,sizeof(int)) < 0) {
         perror(" problem in reading ");
         exit(6);
     }
@@ -88,7 +88,7 @@ int main(int argc, char *argv[]){
             exit(6);
         }
         length = *msgbuf;
-        if (read(fd0, msgbuf, length) < 0) {
+        if (read(fd0,msgbuf,length) < 0) {
             perror(" problem in reading ");
             exit(6);
         }
@@ -191,7 +191,7 @@ int main(int argc, char *argv[]){
     }
     length=virusNames.getCapacity();
     //Send amount of viruses found
-    if ((write(fd1, &length, sizeof(int))) == -1) {
+    if ((write(fd1,&length,sizeof(int))) == -1) {
         perror("Error in Writing");
         exit(5);
     }
@@ -209,15 +209,15 @@ int main(int argc, char *argv[]){
         }
         filter=citizenFilters.getFilter(virus);
         counter=0;
-        loc= buffSize / sizeof(int);
-        while(counter< bloomSize / buffSize){
-            if ((write(fd1, &filter[counter*loc], buffSize)) == -1) {
+        loc= buffSize/sizeof(int);
+        while(counter< bloomSize/buffSize){
+            if ((write(fd1,&filter[counter*loc],buffSize)) == -1) {
                 perror("Error in Writing");
                 exit(5);
             }
             counter++;
-            if(counter== bloomSize / buffSize and bloomSize % buffSize > 0){
-                if ((write(fd1,&filter[counter*loc], bloomSize % buffSize)) == -1) {
+            if(counter== bloomSize/buffSize and bloomSize%buffSize > 0){
+                if ((write(fd1,&filter[counter*loc],bloomSize % buffSize)) == -1) {
                     perror("Error in Writing");
                     exit(5);
                 }
@@ -232,7 +232,7 @@ int main(int argc, char *argv[]){
     }
     //Wait until something happens
     bool alive=true;
-    int choice;
+    int choice,found;
     string answer;
     while(alive){
         pause();
@@ -281,7 +281,36 @@ int main(int argc, char *argv[]){
                     }
                 }
                 else if (choice==1){
-                    cout << "Second: " << id << endl;
+                    currRecord=citizenData.getEntry(id);
+                    if (currRecord!=NULL){
+                        found=1;
+                        if ((write(fd1,&found,sizeof(int))) == -1) {
+                            perror("Error in Writing");
+                            exit(5);
+                        }
+                        cout << id << " " << currRecord->getName() << " " << currRecord->getCountry() << endl;
+                        cout << "AGE " << currRecord->getAge() << endl;
+                        if (citizenVaccines.getVaccinateInfo(id)==false){
+                            found = 0;
+                            if ((write(fd1,&found,sizeof(int))) == -1) {
+                                perror("Error in Writing");
+                                exit(5);
+                            }
+                        }
+                        else{
+                            if ((write(fd1,&found,sizeof(int))) == -1) {
+                                perror("Error in Writing");
+                                exit(5);
+                            }
+                        }
+                    }
+                    else{
+                        found=0;
+                        if ((write(fd1,&found,sizeof(int))) == -1) {
+                            perror("Error in Writing");
+                            exit(5);
+                        }
+                    }
                 }
                 else{
                     cout << "Unknown action." << endl;
@@ -302,6 +331,7 @@ int main(int argc, char *argv[]){
 void catchINT(int sig_no){
     cout << "@C INT/QUIT CAUGHT with: " << sig_no << endl;
     sig_flag = 1;
+    //TODO: MAKE LOGFILE (also at main)
 }
 
 void catchUSR1(int sig_no){
@@ -313,3 +343,5 @@ void catchUSR2(int sig_no){
     cout << "@C USR2 CAUGHT with: " << sig_no << endl;
     sig_flag = 3;
 }
+
+//TODO: Signal catchers at more places

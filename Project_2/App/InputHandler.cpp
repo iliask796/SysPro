@@ -1,4 +1,6 @@
 #include "InputHandler.h"
+#include <iostream>
+using namespace std;
 
 CommandInput::CommandInput(int size1) {
     size = size1;
@@ -122,8 +124,10 @@ int compareDates(const string& date1,const string& date2) {
     }
 }
 
-int safeDateCheck(const string& date1) {
+int safeDateCheck(const string& date1,const string& date2) {
     string dateInfo1[3];
+    string dateInfo2[3];
+    int year1,year2,days1,days2;
     int i,start = 0,end = date1.find('-');
     for (i=0;i<2;i++){
         dateInfo1[i]= date1.substr(start,end-start);
@@ -131,4 +135,27 @@ int safeDateCheck(const string& date1) {
         end = date1.find('-',start);
     }
     dateInfo1[i]= date1.substr(start,end-start);
+    start = 0;
+    end = date2.find('-');
+    for (i=0;i<2;i++){
+        dateInfo2[i]= date2.substr(start,end-start);
+        start = end + 1;
+        end = date2.find('-',start);
+    }
+    dateInfo2[i]= date2.substr(start,end-start);
+    days1 = stoi(dateInfo1[0])+30*stoi(dateInfo1[1]);
+    year1 = stoi(dateInfo1[2]);
+    days2 = stoi(dateInfo2[0])+30*stoi(dateInfo2[1]);
+    year2 = stoi(dateInfo2[2]);
+    if (year2>year1){
+        return 1;
+    }
+    else{
+        if (year2==year1 and days2-days1>=180){
+            return 1;
+        }
+        else{
+            return 0;
+        }
+    }
 }

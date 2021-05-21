@@ -24,7 +24,7 @@ pid_t child2;
 
 int main(int argc,char* argv[]){
     //Input checks and value initialization
-    if (argc != 9){
+    if (argc!=9){
         cout << "Error: Invalid Amount of App Arguments" << endl;
         return -1;
     }
@@ -50,7 +50,7 @@ int main(int argc,char* argv[]){
     sigaction(SIGINT,&act2,NULL);
     sigaction(SIGQUIT,&act2,NULL);
     //Start necessary actions for App
-    int i,j,k,pid[monitors],count,length,loc,fd[monitors * 2],retval=0,msgbuf2[buffSize];
+    int i,j,k,pid[monitors],count,length,loc,fd[monitors*2],retval=0,msgbuf2[buffSize];
     string country,virus;
     char msgbuf[buffSize+1],FIFO[monitors*2][FIFONAMELEN];
     pid_t childpid;
@@ -60,7 +60,7 @@ int main(int argc,char* argv[]){
     InfoList virusNames;
     virusNames.setParameters(0);
     BloomList* citizenFilter[monitors];
-    for (i=0; i < monitors; i++){
+    for (i=0;i<monitors;i++){
         citizenFilter[i] = new BloomList(bloomSize,3);
     }
     //Make and open pipes (2 for each process)
@@ -79,7 +79,7 @@ int main(int argc,char* argv[]){
     }
     //Fork processes and exec monitor
     cout << "#Parent#" << " process ID: " << getpid() << ", parent ID: " << getppid() << endl;
-    for (i=0; i < monitors; i++){
+    for (i=0;i<monitors;i++){
         childpid = fork();
         if (childpid == -1){
             perror("fork");
@@ -87,9 +87,13 @@ int main(int argc,char* argv[]){
         }
         if (childpid == 0){
             cout << "Child #" << i+1 << ", process ID: " << getpid() << ", parent ID: " << getppid() << endl;
-            retval = execlp("/home/iliask/CLionProjects/SysPro/Project_2/App/cmake-build-debug/Monitor", FIFO[i], FIFO[i + monitors], NULL);
+            char currentDirectory[400];
+            if (getcwd(currentDirectory, sizeof(currentDirectory)) != NULL){
+                strcat(currentDirectory,"/Monitor");
+            }
+            retval = execlp(currentDirectory, FIFO[i], FIFO[i+monitors], NULL);
             if(retval == -1) {
-                perror("execlp");
+                perror("execl");
                 exit(4);
             }
             exit(0);
@@ -98,13 +102,13 @@ int main(int argc,char* argv[]){
         sleep(1);
     }
     //Store folder names and divide them for each process
-    if ( (dir_ptr = opendir (dirname)) == NULL ) {
+    if ((dir_ptr = opendir(dirname)) == NULL ) {
         cout << stderr << " cannot open " << dirname << endl;
     }
     else {
 //        cout << "Directory " << dirname << " successfully opened." << endl;
         i=0;
-        while ( (direntp = readdir(dir_ptr) ) != NULL ){
+        while ((direntp = readdir(dir_ptr)) != NULL ){
             if (direntp->d_name[0] != '.'){
 //                cout << "Directory " << direntp->d_name << " found here." << endl;
                 strcpy(msgbuf,direntp->d_name);
@@ -117,7 +121,7 @@ int main(int argc,char* argv[]){
 //        cout << "Closing Directory." << endl;
         closedir(dir_ptr);
         //Transfer initialization data
-        for (i=0; i < monitors; i++){
+        for (i=0;i<monitors;i++){
             if ((write(fd[i],&buffSize,sizeof(int))) == -1) {
                 perror("Error in Writing");
                 exit(5);
@@ -128,7 +132,7 @@ int main(int argc,char* argv[]){
             }
         }
         //Transfer directory names over pipes
-        for (i=0; i < monitors; i++){
+        for (i=0;i<monitors;i++){
             count = DirList.getCapacity(i);
             if ((write(fd[i],dirname,buffSize)) == -1) {
                 perror("Error in Writing");
@@ -154,19 +158,19 @@ int main(int argc,char* argv[]){
         sleep(2);
         cout << "This is the Parent Process" << endl;
         //Read filters
-        for (i=0; i < monitors; i++){
+        for (i=0;i<monitors;i++){
             if (read(fd[i+monitors],msgbuf,sizeof(int)) < 0) {
                 perror(" problem in reading ");
                 exit(6);
             }
             count=*msgbuf;
             for (j=0;j<count;j++){
-                if (read(fd[i + monitors], msgbuf, sizeof(int)) < 0) {
+                if (read(fd[i+monitors],msgbuf,sizeof(int)) < 0) {
                     perror(" problem in reading ");
                     exit(6);
                 }
                 length=*msgbuf;
-                if (read(fd[i + monitors], msgbuf, length) < 0) {
+                if (read(fd[i+monitors],msgbuf,length) < 0) {
                     perror(" problem in reading ");
                     exit(6);
                 }
@@ -209,8 +213,8 @@ int main(int argc,char* argv[]){
     int ready;
     int progress=0;
     //Get ready check from every process
-    for (int c=0; c < monitors; c++){
-        if (read(fd[c + monitors], &ready, sizeof(int)) < 0) {
+    for (int c=0;c<monitors;c++){
+        if (read(fd[c+monitors],&ready,sizeof(int)) < 0) {
             perror(" problem in reading ");
             exit(6);
         }
@@ -240,7 +244,7 @@ int main(int argc,char* argv[]){
                 return -3;
             }
             if (child_flag){
-                for(i=0; i < monitors; i++){
+                for(i=0;i<monitors;i++){
                     if (pid[i]==child2){
                         cout << "Forking Process " << child2 << " again." << endl;
                     }
@@ -318,11 +322,25 @@ int main(int argc,char* argv[]){
                         exit(6);
                     }
                     msgbuf[length]='\0';
-
+                    if (msgbuf == "NO"){
+                        cout << "REQUEST REJECTED – YOU ARE NOT VACCINATED" << endl;
+                    }
+                    else{
+                        if (safeDateCheck(msgbuf,cmdi.getWord(2))==0){
+                            cout << "REQUEST REJECTED – YOU WILL NEED ANOTHER VACCINATION BEFORE TRAVEL DATE" << endl;
+                        }
+                        else{
+                            cout << "REQUEST ACCEPTED – HAPPY TRAVELS" << endl;
+                        }
+                    }
                 }
                 else{
                     cout << "REQUEST REJECTED – YOU ARE NOT VACCINATED" << endl;
                 }
+                //TODO: Store requests
+            }
+            else if (cmdi.getWord(0) == "/travelStats"){
+                //TODO: Stats
             }
             else if (cmdi.getWord(0) == "/addVaccinationRecords"){
                 if (cmdi.getCount()!=2){
@@ -339,6 +357,7 @@ int main(int argc,char* argv[]){
                     kill(pid[data],SIGUSR1);
                     sleep(1);
                 }
+                //TODO: UPDATE FILTER
             }
             else if (cmdi.getWord(0) == "/searchVaccinationStatus"){
                 if (cmdi.getCount()!=2){
@@ -363,7 +382,20 @@ int main(int argc,char* argv[]){
                         exit(5);
                     }
                     sleep(1);
-                    cout << "TODO" << endl;
+                    if (read(fd[i+monitors],msgbuf,sizeof(int)) < 0) {
+                        perror(" problem in reading ");
+                        exit(6);
+                    }
+                    choice=*msgbuf;
+                    if (choice==1){
+                        if (read(fd[i+monitors],msgbuf,sizeof(int)) < 0) {
+                            perror(" problem in reading ");
+                            exit(6);
+                        }
+                        choice=*msgbuf;
+                        //TODO: continue search
+                        cout << "TODO" << endl;
+                    }
                 }
             }
             else if (cmdi.getWord(0) == "/test") {
@@ -389,12 +421,12 @@ int main(int argc,char* argv[]){
     else {
         cout << "Error: Process initial data transfer was not successful." << endl;
     }
-    for (i=0; i < monitors * 2; i++){
+    for (i=0;i<monitors*2;i++){
         close(fd[i]);
     }
     cout << "Killing the kids." << endl;
     cout << "These are the countries of the main process:" << endl;
-    for(i=0; i < monitors; i++){
+    for(i=0;i<monitors;i++){
         kill(pid[i],SIGKILL);
         sleep(1);
         for(j=1;j<=DirList.getCapacity(i);j++){
@@ -410,6 +442,7 @@ void catchCHLD(int signo){
     child2 = wait(&status);
     cout << child2 << "," << status << ")" << endl;
     child_flag=true;
+    //TODO: FORK AGAIN
 }
 
 void catchINT(int signo){
@@ -425,3 +458,6 @@ void catchINT(int signo){
 // /travelRequest 1885 11-11-1111 USA countryTo Influenza-C (MAYBE)
 // /travelRequest 1019 11-11-1111 USA countryTo Mayaro (NO)
 // /travelRequest 5856 11-11-1111 USA countryTo Dhori-0 (MAYBE)
+// /searchVaccinationStatus 9058
+// /searchVaccinationStatus 1019
+// /searchVaccinationStatus 5856

@@ -321,14 +321,14 @@ bool VirusSkipList::getVaccinateInfo(int id1) {
     while (tmp!=NULL) {
         if (tmp->isVaccinated == "NO"){
             if (tmp->sList->inList(id1)==true){
-                cout << tmp->virus << " " << tmp->isVaccinated << endl;
+                cout << tmp->virus << " " << "NOT YET VACCINATED" << endl;
                 flag = true;
             }
         }
         else if (tmp->isVaccinated == "YES"){
             date1 = tmp->sList->getDate(id1);
             if (date1 != "-2"){
-                cout << tmp->virus << " " << tmp->isVaccinated << " " << date1 << endl;
+                cout << tmp->virus << " " << "VACCINATED ON" << " " << date1 << endl;
                 flag = true;
             }
         }
