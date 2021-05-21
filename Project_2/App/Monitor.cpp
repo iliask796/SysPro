@@ -9,10 +9,8 @@
 using namespace std;
 
 #define RECORDTABLESIZE 100
-#define BUFFSIZE 200
-#define BLOOMSIZE 1000
 
-int sig_flag;
+int sig_flag=0;
 void catchINT(int);
 void catchUSR1(int);
 
@@ -26,7 +24,6 @@ int main(int argc, char *argv[]){
     sigaction(SIGQUIT,&act1,NULL);
     sigaction(SIGUSR1,&act2,NULL);
     int fd0,fd1,entriesNum,i,j,length,start,end,counter,id,age,loc;
-    char msgbuf[BUFFSIZE+1];
     string inputdir,subdir,line,filePath,name,country,virus,isVaccinated,date,data;
     int* filter;
     ifstream countryFile;
@@ -40,8 +37,6 @@ int main(int argc, char *argv[]){
     InfoList virusNames;
     virusNames.setParameters(0);
     RecordTable citizenData(RECORDTABLESIZE);
-    int bloomSize = BLOOMSIZE;
-    BloomList citizenFilters(bloomSize,3);
 //    VirusSkipList citizenVaccines(3);
     sleep(2);
     if ((fd0= open(argv[0], O_RDWR)) < 0) {
@@ -52,7 +47,20 @@ int main(int argc, char *argv[]){
         perror(" fifo open problem ");
         exit(2);
     }
-    if (read(fd0, msgbuf, BUFFSIZE) < 0) {
+    int size[1];
+    if (read(fd0,size,sizeof(int)) < 0) {
+        perror(" problem in reading ");
+        exit(6);
+    }
+    int buffSize = *size;
+    char msgbuf[buffSize+1];
+    if (read(fd0, size, sizeof(int)) < 0) {
+        perror(" problem in reading ");
+        exit(6);
+    }
+    int bloomSize = *size;
+    BloomList citizenFilters(bloomSize,3);
+    if (read(fd0, msgbuf, buffSize) < 0) {
         perror(" problem in reading ");
         exit(6);
     }
@@ -191,15 +199,15 @@ int main(int argc, char *argv[]){
         }
         filter=citizenFilters.getFilter(virus);
         counter=0;
-        loc=BUFFSIZE/sizeof(int);
-        while(counter<BLOOMSIZE/BUFFSIZE){
-            if ((write(fd1,&filter[counter*loc],BUFFSIZE)) == -1) {
+        loc= buffSize / sizeof(int);
+        while(counter< bloomSize / buffSize){
+            if ((write(fd1, &filter[counter*loc], buffSize)) == -1) {
                 perror("Error in Writing");
                 exit(5);
             }
             counter++;
-            if(counter==BLOOMSIZE/BUFFSIZE and BLOOMSIZE%BUFFSIZE>0){
-                if ((write(fd1,&filter[counter*loc],BLOOMSIZE%BUFFSIZE)) == -1) {
+            if(counter== bloomSize / buffSize and bloomSize % buffSize > 0){
+                if ((write(fd1,&filter[counter*loc], bloomSize % buffSize)) == -1) {
                     perror("Error in Writing");
                     exit(5);
                 }
@@ -226,6 +234,7 @@ int main(int argc, char *argv[]){
                 cout << "New File Notification. Make new Bloom Filters." << endl;
                 break;
             default:
+                cout << "Caught a signal which is not being handled." << endl;
                 break;
         }
     }
