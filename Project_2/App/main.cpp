@@ -10,11 +10,14 @@
 #include "CitizenRecords.h"
 #include "BloomFilter.h"
 #include "InputHandler.h"
+#include "TravelRecords.h"
 using namespace std;
 
 #define FIFONAME "my_fifo"
 #define FIFONAMELEN 16
 #define PERMS 0666
+#define LOGFILE "/log_file."
+#define FILEPERMS 0644
 
 void catchCHLD(int);
 void catchINT(int);
@@ -50,6 +53,8 @@ int main(int argc,char* argv[]){
     sigaction(SIGINT,&act2,NULL);
     sigaction(SIGQUIT,&act2,NULL);
     //Start necessary actions for App
+    char currentDirectory[400];
+    int filedes;
     int i,j,k,pid[monitors],count,length,loc,fd[monitors*2],retval=0,msgbuf2[buffSize];
     string country,virus;
     char msgbuf[buffSize+1],FIFO[monitors*2][FIFONAMELEN];
@@ -60,6 +65,9 @@ int main(int argc,char* argv[]){
     InfoList virusNames;
     virusNames.setParameters(0);
     BloomList* citizenFilter[monitors];
+    int pos,neg;
+    TravelDataTable posTravelData;
+    TravelDataTable negTravelData;
     for (i=0;i<monitors;i++){
         citizenFilter[i] = new BloomList(bloomSize,3);
     }
@@ -87,7 +95,6 @@ int main(int argc,char* argv[]){
         }
         if (childpid == 0){
             cout << "Child #" << i+1 << ", process ID: " << getpid() << ", parent ID: " << getppid() << endl;
-            char currentDirectory[400];
             if (getcwd(currentDirectory, sizeof(currentDirectory)) != NULL){
                 strcat(currentDirectory,"/Monitor");
             }
@@ -232,15 +239,34 @@ int main(int argc,char* argv[]){
         while (!quit) {
             cmdi.clear();
             if (term_flag){
-                cout << "Killing the kids." << endl;
-                cout << "These are the countries of the main process:" << endl;
+                if (getcwd(currentDirectory, sizeof(currentDirectory)) != NULL){
+                    strcat(currentDirectory,LOGFILE);
+                    strcat(currentDirectory,to_string(getpid()).c_str());
+                }
+                if ((filedes=creat(currentDirectory,FILEPERMS))==-1){
+                    perror ("creating") ;
+                    exit(8);
+                }
                 for(i=0; i < monitors; i++){
+                    delete citizenFilter[i];
                     kill(pid[i],SIGKILL);
                     sleep(1);
                     for(j=1;j<=DirList.getCapacity(i);j++){
-                        cout << DirList.getEntry(i,j) << endl;
+                        write(filedes,DirList.getEntry(i,j).c_str(),DirList.getEntry(i,j).length());
+                        write(filedes,"\n",1);
                     }
                 }
+                pos = posTravelData.getTotalRequests();
+                neg = negTravelData.getTotalRequests();
+                write(filedes,"TOTAL TRAVEL REQUESTS ",22);
+                write(filedes,to_string(pos+neg).c_str(),to_string(pos+neg).length());
+                write(filedes,"\n",1);
+                write(filedes,"ACCEPTED ",9);
+                write(filedes,to_string(pos).c_str(),to_string(pos).length());
+                write(filedes,"\n",1);
+                write(filedes,"REJECTED ",9);
+                write(filedes,to_string(neg).c_str(),to_string(neg).length());
+                write(filedes,"\n",1);
                 return -3;
             }
             if (child_flag){
@@ -256,6 +282,7 @@ int main(int argc,char* argv[]){
             cmdi.insertCommand(input1);
             if (cmdi.getWord(0) == "/exit") {
                 quit = true;
+                term_flag = true;
             }
             else if (cmdi.getWord(0) == "/help") {
                 cout << "*** Listing available commands *** " << endl;
@@ -328,19 +355,55 @@ int main(int argc,char* argv[]){
                     else{
                         if (safeDateCheck(msgbuf,cmdi.getWord(2))==0){
                             cout << "REQUEST REJECTED – YOU WILL NEED ANOTHER VACCINATION BEFORE TRAVEL DATE" << endl;
+                            negTravelData.insertNode(cmdi.getWord(5),DirList.getCountryInfo(cmdi.getWord(3)),cmdi.getWord(2));
                         }
                         else{
                             cout << "REQUEST ACCEPTED – HAPPY TRAVELS" << endl;
+                            posTravelData.insertNode(cmdi.getWord(5),DirList.getCountryInfo(cmdi.getWord(3)),cmdi.getWord(2));
                         }
                     }
                 }
                 else{
                     cout << "REQUEST REJECTED – YOU ARE NOT VACCINATED" << endl;
+                    negTravelData.insertNode(cmdi.getWord(5),DirList.getCountryInfo(cmdi.getWord(3)),cmdi.getWord(2));
                 }
-                //TODO: Store requests
             }
             else if (cmdi.getWord(0) == "/travelStats"){
-                //TODO: Stats
+                if (virusNames.getInfo(cmdi.getWord(1))==NULL){
+                    cout << "Error: Virus Not Found." << endl;
+                    continue;
+                }
+                if (!cmdi.isDate(2) or !cmdi.isDate(3)){
+                    cout << "Error: Wrong DATE format. DD-MM-YYYY allowed." << endl;
+                    continue;
+                }
+                switch(cmdi.getCount()){
+                    //TODO: add date comparison
+                    case 4:
+                        cout << "Stats for every country." << endl;
+                        pos = posTravelData.getRequests(cmdi.getWord(1));
+                        neg = negTravelData.getRequests(cmdi.getWord(1));
+                        cout << "TOTAL REQUESTS " << pos+neg << endl;
+                        cout << "ACCEPTED " << pos << endl;
+                        cout << "REJECTED " << neg << endl;
+                        break;
+                    case 5:
+                        data=DirList.getInfo(cmdi.getWord(4));
+                        if (data==-1){
+                            cout << "Error: Country Not Found." << endl;
+                            break;
+                        }
+                        cout << "Stats for one country." << endl;
+                        pos = posTravelData.getRequests(cmdi.getWord(1),cmdi.getWord(4));
+                        neg = negTravelData.getRequests(cmdi.getWord(1),cmdi.getWord(4));
+                        cout << "TOTAL REQUESTS " << pos+neg << endl;
+                        cout << "ACCEPTED " << pos << endl;
+                        cout << "REJECTED " << neg << endl;
+                        break;
+                    default:
+                        cout << "Error: Arguments Mismatch. Type /help for more info." << endl;
+                        break;
+                }
             }
             else if (cmdi.getWord(0) == "/addVaccinationRecords"){
                 if (cmdi.getCount()!=2){
@@ -414,6 +477,9 @@ int main(int argc,char* argv[]){
             else if (cmdi.getWord(0) == "/test3") {
                 raise(SIGINT);
             }
+            else if (cmdi.getWord(0) == "/test4"){
+
+            }
             cin.clear();
             fflush(stdin);
         }
@@ -424,25 +490,47 @@ int main(int argc,char* argv[]){
     for (i=0;i<monitors*2;i++){
         close(fd[i]);
     }
-    cout << "Killing the kids." << endl;
-    cout << "These are the countries of the main process:" << endl;
+    cout << "Exiting." << endl;
+    if (getcwd(currentDirectory, sizeof(currentDirectory)) != NULL){
+        strcat(currentDirectory,LOGFILE);
+        strcat(currentDirectory,to_string(getpid()).c_str());
+    }
+    if ((filedes=creat(currentDirectory,FILEPERMS))==-1){
+        perror ("creating") ;
+        exit(8);
+    }
     for(i=0;i<monitors;i++){
+        delete citizenFilter[i];
         kill(pid[i],SIGKILL);
         sleep(1);
         for(j=1;j<=DirList.getCapacity(i);j++){
-            cout << DirList.getEntry(i,j) << endl;
+            write(filedes,DirList.getEntry(i,j).c_str(),DirList.getEntry(i,j).length());
+            write(filedes,"\n",1);
         }
     }
+    pos = posTravelData.getTotalRequests();
+    neg = negTravelData.getTotalRequests();
+    write(filedes,"TOTAL TRAVEL REQUESTS ",22);
+    write(filedes,to_string(pos+neg).c_str(),to_string(pos+neg).length());
+    write(filedes,"\n",1);
+    write(filedes,"ACCEPTED ",9);
+    write(filedes,to_string(pos).c_str(),to_string(pos).length());
+    write(filedes,"\n",1);
+    write(filedes,"REJECTED ",9);
+    write(filedes,to_string(neg).c_str(),to_string(neg).length());
+    write(filedes,"\n",1);
     return 0;
 }
 
 void catchCHLD(int signo){
-    int status;
-    cout << "@M CHLD CAUGHT with: " << signo  << " (";
-    child2 = wait(&status);
-    cout << child2 << "," << status << ")" << endl;
-    child_flag=true;
-    //TODO: FORK AGAIN
+    if (!term_flag){
+        int status;
+        cout << "@M CHLD CAUGHT with: " << signo  << " (";
+        child2 = wait(&status);
+        cout << child2 << "," << status << ")" << endl;
+        child_flag=true;
+        //TODO: FORK AGAIN
+    }
 }
 
 void catchINT(int signo){
@@ -454,6 +542,9 @@ void catchINT(int signo){
 // 1:USA,UK,Korea || 2:Germany,Japan || 3:Greece,Italy
 // /travelRequest 123 11-11-1111 Greece countryTo H1N1
 // /addVaccinationRecords USA
+// /travelStats Salivirus date1 date2 [country]
+// /travelStats Influenza-C date1 date2 [country]
+// /travelStats Mayaro date1 date2
 // /travelRequest 9058 11-11-1111 USA countryTo Salivirus (NO)
 // /travelRequest 1885 11-11-1111 USA countryTo Influenza-C (MAYBE)
 // /travelRequest 1019 11-11-1111 USA countryTo Mayaro (NO)

@@ -7,7 +7,7 @@ private:
     string* country;
     int age;
 public:
-    Record(int,string,string*,int);
+    Record(int,const string&,string*,int);
     int getId() const;
     const string& getName() const;
     string* getCountry() const;
@@ -41,7 +41,7 @@ private:
     RecordList* table;
 public:
     RecordTable(int);
-    Record* insertElement(int,string,string*,int);
+    Record* insertElement(int,const string&,string*,int);
     Record* getEntry(int);
     ~RecordTable();
 };
@@ -51,7 +51,7 @@ private:
     string info;
     InfoNode* next;
 public:
-    InfoNode(string);
+    InfoNode(const string&);
     ~InfoNode();
     friend class InfoList;
 };
@@ -64,9 +64,9 @@ private:
 public:
     InfoList();
     void setParameters(int);
-    void insertNode(string);
+    void insertNode(const string&);
     string getEntry(int);
-    string* getInfo(string);
+    string* getInfo(const string&);
     void increment();
     int getCapacity();
     ~InfoList();
@@ -79,9 +79,10 @@ private:
     InfoList* table;
 public:
     InfoTable(int);
-    void insertNode(int,string);
+    void insertNode(int,const string&);
     int getCapacity(int);
     string getEntry(int,int);
-    int getInfo(string);
+    int getInfo(const string&);
+    string* getCountryInfo(const string&);
     ~InfoTable();
 };

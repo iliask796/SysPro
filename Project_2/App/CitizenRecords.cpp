@@ -1,6 +1,6 @@
 #include "CitizenRecords.h"
 
-Record::Record(int id1, string nam, string* country1, int age1) {
+Record::Record(int id1, const string& nam, string* country1, int age1) {
     id = id1;
     name = nam;
     country = country1;
@@ -106,7 +106,7 @@ RecordTable::RecordTable(int cap) {
     table = new RecordList[size];
 }
 
-Record* RecordTable::insertElement(int id1, string nam, string* country1, int age1) {
+Record* RecordTable::insertElement(int id1, const string& nam, string* country1, int age1) {
     Record* citizenInfo = new Record(id1,nam,country1,age1);
     int key = citizenInfo->getId();
     unsigned long index = hash_i(to_string(key),0) % size;
@@ -123,7 +123,7 @@ RecordTable::~RecordTable() {
     delete[] table;
 }
 
-InfoNode::InfoNode(string s1) {
+InfoNode::InfoNode(const string& s1) {
     info = s1;
     next = NULL;
 }
@@ -141,7 +141,7 @@ void InfoList::setParameters(int pNum){
     entriesNum = 0;
 }
 
-void InfoList::insertNode(string s1) {
+void InfoList::insertNode(const string& s1) {
     InfoNode* new_node = new InfoNode(s1);
     if (head==NULL){
         head = new_node;
@@ -167,7 +167,7 @@ string InfoList::getEntry(int place) {
     return tmp->info;
 }
 
-string* InfoList::getInfo(string s1) {
+string* InfoList::getInfo(const string& s1) {
     InfoNode* tmp = head;
     while (tmp!=NULL){
         if (tmp->info.compare(s1)==0){
@@ -208,7 +208,7 @@ InfoTable::InfoTable(int pTotalNum) {
     }
 }
 
-void InfoTable::insertNode(int pNum, string s1) {
+void InfoTable::insertNode(int pNum, const string& s1) {
     for (int i=0;i<tableSize;i++){
         if (table[i].processNum == pNum){
             table[i].insertNode(s1);
@@ -235,7 +235,7 @@ string InfoTable::getEntry(int pNum, int place) {
     return "-1";
 }
 
-int InfoTable::getInfo(string s1) {
+int InfoTable::getInfo(const string& s1) {
     string* tmp;
     for (int i=0;i<tableSize;i++){
         tmp = table[i].getInfo(s1);
@@ -244,6 +244,17 @@ int InfoTable::getInfo(string s1) {
         }
     }
     return -1;
+}
+
+string* InfoTable::getCountryInfo(const string& s1) {
+    string* tmp;
+    for (int i=0;i<tableSize;i++){
+        tmp = table[i].getInfo(s1);
+        if (tmp != NULL){
+            return tmp;
+        }
+    }
+    return NULL;
 }
 
 InfoTable::~InfoTable() {

@@ -331,7 +331,7 @@ int main(int argc, char *argv[]){
 void catchINT(int sig_no){
     cout << "@C INT/QUIT CAUGHT with: " << sig_no << endl;
     sig_flag = 1;
-    //TODO: MAKE LOGFILE (also at main)
+    //TODO: MAKE LOGFILE + RECORDS
 }
 
 void catchUSR1(int sig_no){
