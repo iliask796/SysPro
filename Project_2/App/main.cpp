@@ -9,7 +9,6 @@
 #include <dirent.h>
 #include "CitizenRecords.h"
 #include "BloomFilter.h"
-#include "InputHandler.h"
 #include "TravelRecords.h"
 using namespace std;
 
@@ -378,11 +377,10 @@ int main(int argc,char* argv[]){
                     continue;
                 }
                 switch(cmdi.getCount()){
-                    //TODO: add date comparison
                     case 4:
                         cout << "Stats for every country." << endl;
-                        pos = posTravelData.getRequests(cmdi.getWord(1));
-                        neg = negTravelData.getRequests(cmdi.getWord(1));
+                        pos = posTravelData.getRequests(cmdi.getWord(1),cmdi.getWord(2),cmdi.getWord(3));
+                        neg = negTravelData.getRequests(cmdi.getWord(1),cmdi.getWord(2),cmdi.getWord(3));
                         cout << "TOTAL REQUESTS " << pos+neg << endl;
                         cout << "ACCEPTED " << pos << endl;
                         cout << "REJECTED " << neg << endl;
@@ -394,8 +392,8 @@ int main(int argc,char* argv[]){
                             break;
                         }
                         cout << "Stats for one country." << endl;
-                        pos = posTravelData.getRequests(cmdi.getWord(1),cmdi.getWord(4));
-                        neg = negTravelData.getRequests(cmdi.getWord(1),cmdi.getWord(4));
+                        pos = posTravelData.getRequests(cmdi.getWord(1),cmdi.getWord(4),cmdi.getWord(2),cmdi.getWord(3));
+                        neg = negTravelData.getRequests(cmdi.getWord(1),cmdi.getWord(4),cmdi.getWord(2),cmdi.getWord(3));
                         cout << "TOTAL REQUESTS " << pos+neg << endl;
                         cout << "ACCEPTED " << pos << endl;
                         cout << "REJECTED " << neg << endl;
@@ -456,8 +454,19 @@ int main(int argc,char* argv[]){
                             exit(6);
                         }
                         choice=*msgbuf;
-                        //TODO: continue search
-                        cout << "TODO" << endl;
+                        if (choice==1){
+                            if (read(fd[i+monitors],msgbuf,sizeof(int)) < 0) {
+                                perror(" problem in reading ");
+                                exit(6);
+                            }
+                            length=*msgbuf;
+                            if (read(fd[i+monitors],msgbuf,length) < 0) {
+                                perror(" problem in reading ");
+                                exit(6);
+                            }
+                            msgbuf[length]='\0';
+                            cout << msgbuf;
+                        }
                     }
                 }
             }
@@ -478,7 +487,7 @@ int main(int argc,char* argv[]){
                 raise(SIGINT);
             }
             else if (cmdi.getWord(0) == "/test4"){
-
+                cout << compareDates(cmdi.getWord(1),cmdi.getWord(2)) << endl;
             }
             cin.clear();
             fflush(stdin);
@@ -549,6 +558,6 @@ void catchINT(int signo){
 // /travelRequest 1885 11-11-1111 USA countryTo Influenza-C (MAYBE)
 // /travelRequest 1019 11-11-1111 USA countryTo Mayaro (NO)
 // /travelRequest 5856 11-11-1111 USA countryTo Dhori-0 (MAYBE)
-// /searchVaccinationStatus 9058
-// /searchVaccinationStatus 1019
-// /searchVaccinationStatus 5856
+// /searchVaccinationStatus 9058 (1)
+// /searchVaccinationStatus 1019 (1)
+// /searchVaccinationStatus 8825 (2)

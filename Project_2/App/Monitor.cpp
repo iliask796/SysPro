@@ -233,11 +233,14 @@ int main(int argc, char *argv[]){
     //Wait until something happens
     bool alive=true;
     int choice,found;
-    string answer;
+    string answer,part1,part2;
     while(alive){
-        pause();
+        if (sig_flag==0){
+            pause();
+        }
         switch (sig_flag) {
             case 1:
+                sig_flag=0;
                 i=countries.getCapacity();
                 for (j=0;j<i;j++){
                     cout << countries.getEntry(j+1) << endl;
@@ -245,9 +248,11 @@ int main(int argc, char *argv[]){
                 alive=false;
                 break;
             case 2:
+                sig_flag=0;
                 cout << "New File Notification. Make new Bloom Filters." << endl;
                 break;
             case 3:
+                sig_flag=0;
                 if (read(fd0,info,sizeof(int)) < 0) {
                     perror(" problem in reading ");
                     exit(6);
@@ -288,9 +293,9 @@ int main(int argc, char *argv[]){
                             perror("Error in Writing");
                             exit(5);
                         }
-                        cout << id << " " << currRecord->getName() << " " << currRecord->getCountry() << endl;
-                        cout << "AGE " << currRecord->getAge() << endl;
-                        if (citizenVaccines.getVaccinateInfo(id)==false){
+                        part1 = to_string(id) + " " + currRecord->getName() + " " + *currRecord->getCountry() + "\n";
+                        part1 += "AGE " + to_string(currRecord->getAge()) + "\n";
+                        if ((part2=citizenVaccines.getVaccinateInfo(id))=="-1"){
                             found = 0;
                             if ((write(fd1,&found,sizeof(int))) == -1) {
                                 perror("Error in Writing");
@@ -299,6 +304,16 @@ int main(int argc, char *argv[]){
                         }
                         else{
                             if ((write(fd1,&found,sizeof(int))) == -1) {
+                                perror("Error in Writing");
+                                exit(5);
+                            }
+                            answer = part1 + part2;
+                            length=answer.length();
+                            if ((write(fd1,&length,sizeof(int))) == -1) {
+                                perror("Error in Writing");
+                                exit(5);
+                            }
+                            if ((write(fd1,answer.c_str(),length) == -1)) {
                                 perror("Error in Writing");
                                 exit(5);
                             }
@@ -343,5 +358,3 @@ void catchUSR2(int sig_no){
     cout << "@C USR2 CAUGHT with: " << sig_no << endl;
     sig_flag = 3;
 }
-
-//TODO: Signal catchers at more places

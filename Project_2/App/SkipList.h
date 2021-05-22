@@ -22,12 +22,6 @@ public:
     void insert(Record*,const string&);
     string getDate(int);
     bool inList(int);
-    void remove(int);
-    int getPopulation(const string&);
-    int getPopulation(const string&,const string&,const string&);
-    int* getPopulationByAge(const string&);
-    int* getPopulationByAge(const string&,const string&,const string&);
-    void displayInfo();
     ~SkipList();
 };
 
@@ -50,13 +44,7 @@ private:
 public:
     VirusSkipList(int);
     void insert(const string&,const string&,Record*,const string&);
-    void remove(const string&,const string&,int);
     string getVaccinateInfo(int,const string&);
-    bool getVaccinateInfo(int);
-    int getPopulation(const string&,const string&);
-    int getPopulation(const string&,const string&,const string&,const string&);
-    void printStatsByAge(const string&,const string&,int);
-    void printStatsByAge(const string&,const string&,int,const string&,const string&);
-    void displayNonVaccinated(const string&);
+    string getVaccinateInfo(int);
     ~VirusSkipList();
 };

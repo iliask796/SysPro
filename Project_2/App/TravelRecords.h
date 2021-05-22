@@ -1,3 +1,4 @@
+#include "InputHandler.h"
 #include <string>
 using namespace std;
 
@@ -20,8 +21,8 @@ private:
 public:
     TravelDataList(const string&);
     void insertNode(string*,const string&);
-    int getRequests();
-    int getRequests(const string&);
+    int getRequests(const string&,const string&);
+    int getRequests(const string&,const string&,const string&);
     ~TravelDataList();
     friend class TravelDataTable;
 };
@@ -33,8 +34,8 @@ private:
 public:
     TravelDataTable();
     void insertNode(const string&,string*,const string&);
-    int getRequests(const string&);
-    int getRequests(const string&,const string&);
+    int getRequests(const string&,const string&,const string&);
+    int getRequests(const string&,const string&,const string&,const string&);
     int getTotalRequests();
     ~TravelDataTable();
 };

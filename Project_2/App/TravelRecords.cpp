@@ -30,21 +30,23 @@ void TravelDataList::insertNode(string* s1, const string& s2) {
     tmp->next = new_node;
 }
 
-int TravelDataList::getRequests() {
+int TravelDataList::getRequests(const string& date1,const string& date2) {
     int counter=0;
     TravelDataNode* tmp = head;
     while(tmp!=NULL){
-        counter++;
+        if(compareDates(date1,tmp->date)>=0 and compareDates(tmp->date,date2)>=0){
+            counter++;
+        }
         tmp=tmp->next;
     }
     return counter;
 }
 
-int TravelDataList::getRequests(const string& s1) {
+int TravelDataList::getRequests(const string& s1,const string& date1,const string& date2) {
     int counter=0;
     TravelDataNode* tmp = head;
     while(tmp!=NULL){
-        if(s1==*tmp->country){
+        if(s1==*tmp->country and compareDates(date1,tmp->date)>=0 and compareDates(tmp->date,date2)>=0){
             counter++;
         }
         tmp=tmp->next;
@@ -96,22 +98,22 @@ void TravelDataTable::insertNode(const string& s1, string* s2, const string& s3)
     }
 }
 
-int TravelDataTable::getRequests(const string& s1) {
+int TravelDataTable::getRequests(const string& s1,const string& date1,const string& date2) {
     TravelDataList* tmp = table;
     while (tmp!=NULL){
         if (tmp->virus == s1){
-            return tmp->getRequests();
+            return tmp->getRequests(date1,date2);
         }
         tmp=tmp->next;
     }
     return 0;
 }
 
-int TravelDataTable::getRequests(const string& s1, const string& s2) {
+int TravelDataTable::getRequests(const string& s1, const string& s2,const string& date1,const string& date2) {
     TravelDataList* tmp = table;
     while (tmp!=NULL){
         if (tmp->virus == s1){
-            return tmp->getRequests(s2);
+            return tmp->getRequests(s2,date1,date2);
         }
         tmp=tmp->next;
     }
