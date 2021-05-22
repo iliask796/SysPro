@@ -9,6 +9,8 @@
 using namespace std;
 
 #define RECORDTABLESIZE 100
+#define LOGFILE "/log_file."
+#define FILEPERMS 0644
 
 int sig_flag=0;
 void catchINT(int);
@@ -29,7 +31,7 @@ int main(int argc, char *argv[]){
     sigaction(SIGUSR1,&act2,NULL);
     sigaction(SIGUSR2,&act3,NULL);
     //Start necessary actions for Monitor
-    int fd0,fd1,entriesNum,i,j,length,start,end,counter,id,age,loc;
+    int fd0,fd1,entriesNum,i,j,length,start,end,counter,id,age,loc,pos=0,neg=0;
     string inputdir,subdir,line,filePath,name,country,virus,isVaccinated,date,data;
     int* filter;
     ifstream countryFile;
@@ -245,6 +247,9 @@ int main(int argc, char *argv[]){
                 for (j=0;j<i;j++){
                     cout << countries.getEntry(j+1) << endl;
                 }
+                cout << "TOTAL TRAVEL REQUESTS " << pos+neg << endl;
+                cout << "ACCEPTED " << pos << endl;
+                cout << "REJECTED " << neg << endl;
                 alive=false;
                 break;
             case 2:
@@ -283,6 +288,22 @@ int main(int argc, char *argv[]){
                     if ((write(fd1,answer.c_str(),length) == -1)) {
                         perror("Error in Writing");
                         exit(5);
+                    }
+                    if (read(fd0,info,sizeof(int)) < 0) {
+                        perror(" problem in reading ");
+                        exit(6);
+                    }
+                    if (read(fd0,msgbuf,*info) < 0) {
+                        perror(" problem in reading ");
+                        exit(6);
+                    }
+                    msgbuf[*info]='\0';
+                    answer.assign(msgbuf);
+                    if (answer == "NO"){
+                        neg++;
+                    }
+                    else if (answer == "YES"){
+                        pos++;
                     }
                 }
                 else if (choice==1){
@@ -346,7 +367,7 @@ int main(int argc, char *argv[]){
 void catchINT(int sig_no){
     cout << "@C INT/QUIT CAUGHT with: " << sig_no << endl;
     sig_flag = 1;
-    //TODO: MAKE LOGFILE + RECORDS
+    //TODO: MAKE LOGFILE
 }
 
 void catchUSR1(int sig_no){

@@ -233,7 +233,7 @@ int main(int argc,char* argv[]){
         bool quit = false;
         CommandInput cmdi(9);
         int data,idToCheck,choice;
-        string input1;
+        string input1,result;
         cout << "*** Type /help for available commands ***" << endl;
         while (!quit) {
             cmdi.clear();
@@ -350,15 +350,45 @@ int main(int argc,char* argv[]){
                     msgbuf[length]='\0';
                     if (msgbuf == "NO"){
                         cout << "REQUEST REJECTED – YOU ARE NOT VACCINATED" << endl;
+                        result = "NO";
+                        length = result.length();
+                        if ((write(fd[data],&length,sizeof(int))) == -1) {
+                            perror("Error in Writing");
+                            exit(5);
+                        }
+                        if ((write(fd[data],result.c_str(),length)) == -1) {
+                            perror("Error in Writing");
+                            exit(5);
+                        }
                     }
                     else{
                         if (safeDateCheck(msgbuf,cmdi.getWord(2))==0){
                             cout << "REQUEST REJECTED – YOU WILL NEED ANOTHER VACCINATION BEFORE TRAVEL DATE" << endl;
                             negTravelData.insertNode(cmdi.getWord(5),DirList.getCountryInfo(cmdi.getWord(3)),cmdi.getWord(2));
+                            result = "NO";
+                            length = result.length();
+                            if ((write(fd[data],&length,sizeof(int))) == -1) {
+                                perror("Error in Writing");
+                                exit(5);
+                            }
+                            if ((write(fd[data],result.c_str(),length)) == -1) {
+                                perror("Error in Writing");
+                                exit(5);
+                            }
                         }
                         else{
                             cout << "REQUEST ACCEPTED – HAPPY TRAVELS" << endl;
                             posTravelData.insertNode(cmdi.getWord(5),DirList.getCountryInfo(cmdi.getWord(3)),cmdi.getWord(2));
+                            result = "YES";
+                            length = result.length();
+                            if ((write(fd[data],&length,sizeof(int))) == -1) {
+                                perror("Error in Writing");
+                                exit(5);
+                            }
+                            if ((write(fd[data],result.c_str(),length)) == -1) {
+                                perror("Error in Writing");
+                                exit(5);
+                            }
                         }
                     }
                 }
@@ -418,7 +448,7 @@ int main(int argc,char* argv[]){
                     kill(pid[data],SIGUSR1);
                     sleep(1);
                 }
-                //TODO: UPDATE FILTER
+                //TODO: ADD RECORDS
             }
             else if (cmdi.getWord(0) == "/searchVaccinationStatus"){
                 if (cmdi.getCount()!=2){
@@ -533,10 +563,8 @@ int main(int argc,char* argv[]){
 
 void catchCHLD(int signo){
     if (!term_flag){
-        int status;
         cout << "@M CHLD CAUGHT with: " << signo  << " (";
-        child2 = wait(&status);
-        cout << child2 << "," << status << ")" << endl;
+        child2 = wait(NULL);
         child_flag=true;
         //TODO: FORK AGAIN
     }
