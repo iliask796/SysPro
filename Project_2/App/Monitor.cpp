@@ -102,13 +102,10 @@ int main(int argc, char *argv[]){
             cout << stderr << " cannot open " << subdir << endl;
         } else {
             //Access each file and initiate data structures
-//            cout << "Directory " << msgbuf << " successfully opened." << endl;
             while ((direntp = readdir(dir_ptr)) != NULL) {
                 if (direntp->d_name[0] != '.') {
-//                    cout << "File " << direntp->d_name << " found here." << endl;
                     filePath = subdir + "/" + direntp->d_name;
                     countryFile.open(filePath.c_str());
-//                    cout << "Reading file." << endl;
                     while(getline(countryFile,line))
                     {
                         isVaccinated = "";
@@ -183,11 +180,9 @@ int main(int argc, char *argv[]){
                             citizenVaccines.insert(virus, isVaccinated, currRecord, date);
                         }
                     }
-//                    cout << "Reached the end of file." << endl;
                     countryFile.close();
                 }
             }
-//            cout << "Closing Directory." << endl;
             closedir(dir_ptr);
         }
     }

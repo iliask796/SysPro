@@ -112,11 +112,9 @@ int main(int argc,char* argv[]){
         cout << stderr << " cannot open " << dirname << endl;
     }
     else {
-//        cout << "Directory " << dirname << " successfully opened." << endl;
         i=0;
         while ((direntp = readdir(dir_ptr)) != NULL ){
             if (direntp->d_name[0] != '.'){
-//                cout << "Directory " << direntp->d_name << " found here." << endl;
                 strcpy(msgbuf,direntp->d_name);
                 DirList.insertNode(i,msgbuf);
                 if (++i == monitors){
@@ -124,7 +122,6 @@ int main(int argc,char* argv[]){
                 }
             }
         }
-//        cout << "Closing Directory." << endl;
         closedir(dir_ptr);
         //Transfer initialization data
         for (i=0;i<monitors;i++){
@@ -197,7 +194,6 @@ int main(int argc,char* argv[]){
                     for (k=0;k<loc;k++){
                         filter[k+length*loc]=(msgbuf2[k]);
                     }
-//                    cout << "Read Filter" << endl;
                     length++;
                     if(length==bloomSize/buffSize and bloomSize%buffSize>0){
                         if (read(fd[i+monitors],msgbuf2,bloomSize%buffSize) < 0) {
@@ -318,7 +314,6 @@ int main(int argc,char* argv[]){
                 }
                 if (citizenFilter[data]->probInFilter(cmdi.getWord(1),cmdi.getWord(5)) == 1){
                     kill(pid[data],SIGUSR2);
-                    sleep(1);
                     idToCheck=atoi(cmdi.getWord(1).c_str());
                     choice=0;
                     if ((write(fd[data],&choice,sizeof(int))) == -1) {
@@ -461,7 +456,6 @@ int main(int argc,char* argv[]){
                 }
                 for(i=0;i<monitors;i++){
                     kill(pid[i],SIGUSR2);
-                    sleep(1);
                     idToCheck=atoi(cmdi.getWord(1).c_str());
                     choice=1;
                     if ((write(fd[i],&choice,sizeof(int))) == -1) {
