@@ -1,6 +1,4 @@
 #include "BloomFilter.h"
-#include <iostream>
-using namespace std;
 
 BloomFilter::BloomFilter(int sizeInBytes, int no_hashes) {
     filterSize = sizeInBytes / 4;

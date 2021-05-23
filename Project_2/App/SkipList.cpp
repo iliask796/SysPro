@@ -1,5 +1,4 @@
 #include "SkipList.h"
-#include <iostream>
 #include <ctime>
 #include <stdlib.h>
 
