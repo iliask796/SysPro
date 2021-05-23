@@ -39,7 +39,6 @@ int main(int argc, char *argv[]){
     ifstream countryFile;
     DIR* dir_ptr;
     struct dirent* direntp;
-    cout << "Hello World" << endl;
     Record* currRecord;
     bool faultyRecord;
     InfoList countries;
@@ -84,8 +83,9 @@ int main(int argc, char *argv[]){
         exit(6);
     }
     entriesNum = *msgbuf;
-    cout << "This is process: " << getpid() << endl;
+    int dirCount[entriesNum];
     for (i=1;i<=entriesNum;i++) {
+        dirCount[i-1]=0;
         //Ready country folder names
         if (read(fd0, msgbuf, sizeof(int)) < 0) {
             perror(" problem in reading ");
@@ -184,6 +184,7 @@ int main(int argc, char *argv[]){
                     }
                     countryFile.close();
                 }
+                dirCount[i-1]+=1;
             }
             closedir(dir_ptr);
         }
@@ -266,7 +267,35 @@ int main(int argc, char *argv[]){
                 break;
             case 2:
                 sig_flag=0;
-                cout << "New File Notification. Make new Bloom Filters." << endl;
+                cout << "New File Notification." << endl;
+                if (read(fd0, msgbuf, sizeof(int)) < 0) {
+                    perror(" problem in reading ");
+                    exit(6);
+                }
+                length = *msgbuf;
+                if (read(fd0,msgbuf,length) < 0) {
+                    perror(" problem in reading ");
+                    exit(6);
+                }
+                msgbuf[length] = '\0';
+                answer.assign(msgbuf);
+                countries.getCapacity();
+                for (i=1;i<=countries.getCapacity();i++){
+                    if (countries.getEntry(i)==answer){
+                        break;
+                    }
+                }
+                found=0;
+                subdir = inputdir + "/" + answer;
+                if ((dir_ptr = opendir(subdir.c_str())) == NULL) {
+                    cout << stderr << " cannot open " << subdir << endl;
+                }
+                else {
+                    while ((direntp = readdir(dir_ptr)) != NULL) {
+                        found++;
+                    }
+                }
+                cout << "Found " << found-dirCount[i-1] << " new file(s)." << endl;
                 break;
             case 3:
                 sig_flag=0;

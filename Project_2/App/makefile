@@ -38,3 +38,11 @@ SkipList.o: SkipList.h
 clean:
 	$(RM) $(TARGET1) 
 	$(RM) $(TARGET2) 
+	$(RM) main.o
+	$(RM) Monitor.o
+	$(RM) CitizenRecords.o
+	$(RM) HashUtil.o
+	$(RM) BloomFilter.o
+	$(RM) InputHandler.o
+	$(RM) TravelRecords.o
+	$(RM) SkipList.o

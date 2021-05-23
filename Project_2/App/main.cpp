@@ -159,7 +159,6 @@ int main(int argc,char* argv[]){
             }
         }
         sleep(2);
-        cout << "This is the Parent Process" << endl;
         //Read filters
         for (i=0;i<monitors;i++){
             if (read(fd[i+monitors],msgbuf,sizeof(int)) < 0) {
@@ -550,8 +549,18 @@ int main(int argc,char* argv[]){
                     cout << "Country handled by process: " << pid[data] << endl;
                     kill(pid[data],SIGUSR1);
                     sleep(1);
+                    length=cmdi.getWord(1).length();
+                    if ((write(fd[data],&length,sizeof(int))) == -1) {
+                        perror("Error in Writing");
+                        exit(5);
+                    }
+                    if ((write(fd[data],cmdi.getWord(1).c_str(),length)) == -1) {
+                        perror("Error in Writing");
+                        exit(5);
+                    }
+                    sleep(1);
+                    //TODO: ADD RECORDS
                 }
-                //TODO: ADD RECORDS
             }
             else if (cmdi.getWord(0) == "/searchVaccinationStatus"){
                 if (cmdi.getCount()!=2){
@@ -601,25 +610,6 @@ int main(int argc,char* argv[]){
                         }
                     }
                 }
-            }
-            else if (cmdi.getWord(0) == "/test") {
-                cout << citizenFilter[0]->probInFilter("9058","Salivirus") << endl;
-                cout << citizenFilter[0]->probInFilter("1885","Influenza-C") << endl;
-                cout << citizenFilter[0]->probInFilter("1019","Mayaro") << endl;
-                cout << citizenFilter[0]->probInFilter("5856","Dhori-0") << endl;
-            }
-            else if (cmdi.getWord(0) == "/test2"){
-//                for (i=0;i<monitors;i++) {
-//                    kill(pid[i],SIGINT);
-//                }
-                kill(pid[0],SIGINT);
-                sleep(1);
-            }
-            else if (cmdi.getWord(0) == "/test3") {
-                raise(SIGINT);
-            }
-            else if (cmdi.getWord(0) == "/test4"){
-                cout << compareDates(cmdi.getWord(1),cmdi.getWord(2)) << endl;
             }
             cin.clear();
             fflush(stdin);
@@ -675,18 +665,3 @@ void catchINT(int signo){
     cout << "@M INT/QUIT CAUGHT with: " << signo << endl;
     term_flag=true;
 }
-
-// ./App -m 3 -b 200 -s 1000 -i ../CountryLogs
-// 1:USA,UK,Korea || 2:Germany,Japan || 3:Greece,Italy
-// /travelRequest 123 11-11-1111 Greece countryTo H1N1
-// /addVaccinationRecords USA
-// /travelStats Salivirus date1 date2 [country]
-// /travelStats Influenza-C date1 date2 [country]
-// /travelStats Mayaro date1 date2
-// /travelRequest 9058 11-11-1111 USA countryTo Salivirus (NO)
-// /travelRequest 1885 11-11-1111 USA countryTo Influenza-C (MAYBE)
-// /travelRequest 1019 11-11-1111 USA countryTo Mayaro (NO)
-// /travelRequest 5856 11-11-1111 USA countryTo Dhori-0 (MAYBE)
-// /searchVaccinationStatus 9058 (1)
-// /searchVaccinationStatus 1019 (1)
-// /searchVaccinationStatus 8825 (2)
