@@ -268,6 +268,114 @@ int main(int argc,char* argv[]){
                 for(i=0;i<monitors;i++){
                     if (pid[i]==child2){
                         cout << "Forking Process " << child2 << " again." << endl;
+                        childpid = fork();
+                        if (childpid == -1){
+                            perror("fork");
+                            exit(3);
+                        }
+                        if (childpid == 0){
+                            cout << "Child #" << i+1 << ", process ID: " << getpid() << ", parent ID: " << getppid() << endl;
+                            if (getcwd(currentDirectory, sizeof(currentDirectory)) != NULL){
+                                strcat(currentDirectory,"/Monitor");
+                            }
+                            retval = execlp(currentDirectory, FIFO[i], FIFO[i+monitors], NULL);
+                            if(retval == -1) {
+                                perror("execl");
+                                exit(4);
+                            }
+                            exit(0);
+                        }
+                        pid[i]=childpid;
+                        sleep(1);
+                        if ((write(fd[i],&buffSize,sizeof(int))) == -1) {
+                            perror("Error in Writing");
+                            exit(5);
+                        }
+                        if ((write(fd[i],&bloomSize,sizeof(int))) == -1) {
+                            perror("Error in Writing");
+                            exit(5);
+                        }
+                        count = DirList.getCapacity(i);
+                        if ((write(fd[i],dirname,buffSize)) == -1) {
+                            perror("Error in Writing");
+                            exit(5);
+                        }
+                        if ((write(fd[i],&count,sizeof(int))) == -1) {
+                            perror("Error in Writing");
+                            exit(5);
+                        }
+                        for (j=1;j<=count;j++){
+                            country = DirList.getEntry(i,j);
+                            length=country.size();
+                            if ((write(fd[i],&length,sizeof(int))) == -1) {
+                                perror("Error in Writing");
+                                exit(5);
+                            }
+                            if ((write(fd[i],country.c_str(),length)) == -1) {
+                                perror("Error in Writing");
+                                exit(5);
+                            }
+                        }
+                        sleep(2);
+                        if (read(fd[i+monitors],msgbuf,sizeof(int)) < 0) {
+                            perror(" problem in reading ");
+                            exit(6);
+                        }
+                        count=*msgbuf;
+                        citizenFilter[i]->deleteFilter();
+                        for (j=0;j<count;j++){
+                            if (read(fd[i+monitors],msgbuf,sizeof(int)) < 0) {
+                                perror(" problem in reading ");
+                                exit(6);
+                            }
+                            length=*msgbuf;
+                            if (read(fd[i+monitors],msgbuf,length) < 0) {
+                                perror(" problem in reading ");
+                                exit(6);
+                            }
+                            msgbuf[length]='\0';
+                            virus.assign(msgbuf);
+                            if (virusNames.getInfo(virus) == NULL) {
+                                virusNames.insertNode(virus);
+                                virusNames.increment();
+                            }
+                            int* filter = new int[bloomSize/sizeof(int)];
+                            length=0;
+                            loc=buffSize/sizeof(int);
+                            while(length<bloomSize/buffSize){
+                                if (read(fd[i+monitors],msgbuf2,buffSize) < 0) {
+                                    perror(" problem in reading ");
+                                    exit(6);
+                                }
+                                for (k=0;k<loc;k++){
+                                    filter[k+length*loc]=(msgbuf2[k]);
+                                }
+                                length++;
+                                if(length==bloomSize/buffSize and bloomSize%buffSize>0){
+                                    if (read(fd[i+monitors],msgbuf2,bloomSize%buffSize) < 0) {
+                                        perror(" problem in reading ");
+                                        exit(6);
+                                    }
+                                    for (k=0;k<loc;k++){
+                                        filter[k+length*loc]=(msgbuf2[k]);
+                                        if(k==(bloomSize%buffSize)/sizeof(int)){
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            citizenFilter[i]->addFilter(virus,filter);
+                        }
+                        if (read(fd[i+monitors],&ready,sizeof(int)) < 0) {
+                            perror(" problem in reading ");
+                            exit(6);
+                        }
+                        if (ready==1){
+                            cout << "Forking was successful." << endl;
+                        }
+                        else {
+                            cout << "Forking has failed." << endl;
+                        }
                     }
                 }
                 child_flag=false;
@@ -557,10 +665,9 @@ int main(int argc,char* argv[]){
 
 void catchCHLD(int signo){
     if (!term_flag){
-        cout << "@M CHLD CAUGHT with: " << signo  << " (";
+        cout << "@M CHLD CAUGHT with: " << signo  << endl;
         child2 = wait(NULL);
         child_flag=true;
-        //TODO: FORK AGAIN
     }
 }
 

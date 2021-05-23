@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <cstring>
 #include "BloomFilter.h"
 #include "SkipList.h"
 using namespace std;
@@ -31,8 +32,9 @@ int main(int argc, char *argv[]){
     sigaction(SIGUSR1,&act2,NULL);
     sigaction(SIGUSR2,&act3,NULL);
     //Start necessary actions for Monitor
-    int fd0,fd1,entriesNum,i,j,length,start,end,counter,id,age,loc,pos=0,neg=0;
+    int fd0,fd1,filedes,entriesNum,i,j,length,start,end,counter,id,age,loc,pos=0,neg=0;
     string inputdir,subdir,line,filePath,name,country,virus,isVaccinated,date,data;
+    char currentDirectory[400];
     int* filter;
     ifstream countryFile;
     DIR* dir_ptr;
@@ -239,12 +241,27 @@ int main(int argc, char *argv[]){
             case 1:
                 sig_flag=0;
                 i=countries.getCapacity();
-                for (j=0;j<i;j++){
-                    cout << countries.getEntry(j+1) << endl;
+                if (getcwd(currentDirectory, sizeof(currentDirectory)) != NULL){
+                    strcat(currentDirectory,LOGFILE);
+                    strcat(currentDirectory,to_string(getpid()).c_str());
                 }
-                cout << "TOTAL TRAVEL REQUESTS " << pos+neg << endl;
-                cout << "ACCEPTED " << pos << endl;
-                cout << "REJECTED " << neg << endl;
+                if ((filedes=creat(currentDirectory,FILEPERMS))==-1){
+                    perror ("creating") ;
+                    exit(8);
+                }
+                for (j=0;j<i;j++){
+                    write(filedes,countries.getEntry(j+1).c_str(),countries.getEntry(j+1).length());
+                    write(filedes,"\n",1);
+                }
+                write(filedes,"TOTAL TRAVEL REQUESTS ",22);
+                write(filedes,to_string(pos+neg).c_str(),to_string(pos+neg).length());
+                write(filedes,"\n",1);
+                write(filedes,"ACCEPTED ",9);
+                write(filedes,to_string(pos).c_str(),to_string(pos).length());
+                write(filedes,"\n",1);
+                write(filedes,"REJECTED ",9);
+                write(filedes,to_string(neg).c_str(),to_string(neg).length());
+                write(filedes,"\n",1);
                 alive=false;
                 break;
             case 2:

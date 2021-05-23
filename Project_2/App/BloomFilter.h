@@ -34,8 +34,9 @@ private:
 public:
     BloomList(int,int);
     void addToFilter(string,string);
-    void addFilter(string,int*);
-    int probInFilter(string,string);
-    int* getFilter(string);
+    void addFilter(const string&,int*);
+    int probInFilter(const string&,const string&);
+    int* getFilter(const string&);
+    void deleteFilter();
     ~BloomList();
 };

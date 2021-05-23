@@ -84,22 +84,15 @@ void BloomList::addToFilter(string virusName, string str) {
     head = new_node;
 }
 
-void BloomList::addFilter(string virusName, int* filter1) {
+void BloomList::addFilter(const string& virusName, int* filter1) {
     BloomNode* tmp = head;
-    while (tmp!=NULL){
-        if (tmp->virus == virusName){
-            //replace old with new
-            return;
-        }
-        tmp = tmp->next;
-    }
     BloomNode* new_node = new BloomNode(virusName,filterSize,num_hashes,filter1);
     tmp = head;
     new_node->next = tmp;
     head = new_node;
 }
 
-int BloomList::probInFilter(string str,string virusName) {
+int BloomList::probInFilter(const string& str,const string& virusName) {
     BloomNode* tmp = head;
     while (tmp!=NULL)
     {
@@ -115,7 +108,7 @@ int BloomList::probInFilter(string str,string virusName) {
     }
 }
 
-int* BloomList::getFilter(string virusName) {
+int* BloomList::getFilter(const string& virusName) {
     BloomNode* tmp = head;
     while (tmp!=NULL)
     {
@@ -125,6 +118,21 @@ int* BloomList::getFilter(string virusName) {
         tmp = tmp->next;
     }
     return NULL;
+}
+
+void BloomList::deleteFilter(){
+    if (head==NULL){
+        return;
+    }
+    BloomNode* tmp = head->next;
+    while (tmp != NULL)
+    {
+        delete head;
+        head = tmp;
+        tmp = head->next;
+    }
+    delete head;
+    head = NULL;
 }
 
 BloomList::~BloomList() {
@@ -140,3 +148,5 @@ BloomList::~BloomList() {
     }
     delete head;
 }
+
+
