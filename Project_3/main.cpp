@@ -13,9 +13,10 @@
 #include "TravelRecords.h"
 using namespace std;
 
-#define PORT 6909
+#define PORT 9000
 #define LOGFILE "/log_file."
 #define FILEPERMS 0644
+#define HASH_NO 3
 
 void catchCHLD(int);
 void catchINT(int);
@@ -72,7 +73,8 @@ int main(int argc,char* argv[]){
     TravelDataTable posTravelData;
     TravelDataTable negTravelData;
     for (i=0;i<monitors;i++){
-        citizenFilter[i] = new BloomList(bloomSize,3);
+        citizenFilter[i] = new BloomList();
+        citizenFilter[i]->initialize(bloomSize,HASH_NO);
     }
     //Store folder names and divide them for each process
     if ((dir_ptr = opendir(dirname)) == NULL ) {
@@ -108,7 +110,7 @@ int main(int argc,char* argv[]){
         herror("gethostbyname");
         exit(2);
     }
-    //Fork processes and exec monitor
+    //Fork processes create argv array and exec monitorServer
     cout << "#Parent#" << " process ID: " << getpid() << ", parent ID: " << getppid() << endl;
     server.sin_family = AF_INET;
     memcpy(&server.sin_addr, rem->h_addr, rem->h_length);
@@ -119,8 +121,8 @@ int main(int argc,char* argv[]){
     for (i=0;i<monitors;i++){
         port = PORT+i;
         server.sin_port = htons(port);
-        const char* port1 = to_string(port).c_str();
         childpid = fork();
+        char** arg;
         if (childpid == -1){
             perror("fork");
             exit(3);
@@ -130,14 +132,13 @@ int main(int argc,char* argv[]){
             if (getcwd(currentDirectory, sizeof(currentDirectory)) != NULL){
                 strcat(currentDirectory,"/Monitor");
             }
-            char** arg = createArg(DirList.getList(i),port1,thread1,buff1,cyclic1,bloom1);
+            arg = createArg(DirList.getList(i),to_string(port).c_str(),thread1,buff1,cyclic1,bloom1);
             retval = execvp(currentDirectory, arg);
             if(retval == -1) {
                 perror("execvp");
                 exit(4);
             }
             exit(0);
-            delete[] arg;
         }
         pid[i]=childpid;
         sleep(3);
@@ -228,10 +229,9 @@ int main(int argc,char* argv[]){
                     perror ("creating") ;
                     exit(8);
                 }
-                for(i=0; i < monitors; i++){
+                for(i=0;i<monitors;i++){
                     delete citizenFilter[i];
                     kill(pid[i],SIGKILL);
-                    sleep(1);
                     for(j=1;j<=DirList.getCapacity(i);j++){
                         write(filedes,DirList.getEntry(i,j).c_str(),DirList.getEntry(i,j).length());
                         write(filedes,"\n",1);
@@ -606,6 +606,8 @@ int main(int argc,char* argv[]){
         cout << "Error: Process initial data transfer was not successful." << endl;
     }
     for (i=0;i<monitors;i++){
+        kill(pid[i],SIGINT);
+        waitpid(pid[i],NULL,WUNTRACED);
         close(SOCKET[i]);
     }
     cout << "Exiting." << endl;

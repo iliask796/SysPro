@@ -60,7 +60,11 @@ BloomNode::~BloomNode() {
     delete filter;
 }
 
-BloomList::BloomList(int size, int no_hashes) {
+BloomList::BloomList() {
+
+}
+
+void BloomList::initialize(int size, int no_hashes) {
     filterSize = size;
     num_hashes = no_hashes;
     head = NULL;

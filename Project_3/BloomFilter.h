@@ -32,7 +32,8 @@ private:
     int num_hashes;
     BloomNode* head;
 public:
-    BloomList(int,int);
+    BloomList();
+    void initialize(int,int);
     void addToFilter(string,string);
     void addFilter(const string&,int*);
     int probInFilter(const string&,const string&);

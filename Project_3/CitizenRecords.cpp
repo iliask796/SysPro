@@ -298,9 +298,9 @@ char** createArg(InfoList* list,const char* port,const char* threads,const char*
     arg[5] = (char*)buffer;
     arg[7] = (char*)cyclicb;
     arg[9] = (char*)bloom;
-    arg[capacity] = NULL;
     for (i=10;i<capacity-1;i++){
         arg[i] = (char*)list->getArg(iter++)->c_str();
     }
+    arg[i] = NULL;
     return arg;
 }

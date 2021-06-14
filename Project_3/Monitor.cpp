@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <cstring>
+#include <pthread.h>
 #include "BloomFilter.h"
 #include "SkipList.h"
 using namespace std;
@@ -15,11 +16,43 @@ using namespace std;
 #define RECORDTABLESIZE 100
 #define LOGFILE "/log_file."
 #define FILEPERMS 0644
+#define HASH_NO 3
+#define perror2(s,e) cout<<stderr<<": "<<strerror(e)<<endl;
 
-int sig_flag=0;
+typedef struct{
+    int size;
+    string* data;
+    int start;
+    int end;
+    int count;
+} c_buffer;
+
 void catchINT(int);
 void catchUSR1(int);
 void catchUSR2(int);
+
+void initialize(c_buffer*,int);
+void place(c_buffer*,const string&);
+const string& obtain(c_buffer*);
+void destroy(c_buffer*);
+void* consumer(void*);
+
+int sig_flag=0;
+pthread_mutex_t mtx;
+pthread_cond_t notempty;
+pthread_cond_t notfull;
+c_buffer pool;
+int bloomSize;
+Record* currRecord;
+bool faultyRecord;
+InfoList countries;
+InfoList virusNames;
+RecordTable citizenData(RECORDTABLESIZE);
+VirusSkipList citizenVaccines(3);
+BloomList citizenFilters;
+bool quit=false;
+
+int items=3;
 
 int main(int argc, char *argv[]){
     //Set signal handling
@@ -35,7 +68,7 @@ int main(int argc, char *argv[]){
     sigaction(SIGUSR1,&act2,NULL);
     sigaction(SIGUSR2,&act3,NULL);
     //Start necessary actions for Monitor
-    int port,sock,newsock,filedes,i,j,length,start,end,counter,id,age,loc,info[1],pos=0,neg=0;
+    int port,sock,newsock,err,filedes,i,j,length,start,end,counter,id,age,loc,info[1],pos=0,neg=0;
     string line,filePath,name,country,virus,isVaccinated,date,data;
     char currentDirectory[400];
     int* filter;
@@ -47,14 +80,8 @@ int main(int argc, char *argv[]){
     struct sockaddr *serverptr =(struct sockaddr*)&server;
     struct sockaddr *clientptr =(struct sockaddr*)&client;
     struct hostent *rem;
-    Record* currRecord;
-    bool faultyRecord;
-    InfoList countries;
     countries.setParameters(0);
-    InfoList virusNames;
     virusNames.setParameters(0);
-    RecordTable citizenData(RECORDTABLESIZE);
-    VirusSkipList citizenVaccines(3);
     sleep(2);
     //Open socket
     if ((sock = socket(AF_INET, SOCK_STREAM, 0))<0){
@@ -91,8 +118,8 @@ int main(int argc, char *argv[]){
     }
     cout << "Accepted connection." << endl;
     //Set parameters given from main program
-    int folders = argc-10;
-    string folderNames[folders];
+    int paths = argc-10;
+    string folderNames[paths];
     j=0;
     for (i=10;i<argc;i++){
         folderNames[j++].assign(argv[i]);
@@ -101,101 +128,154 @@ int main(int argc, char *argv[]){
     int buffSize = atoi(argv[5]);
     char msgbuf[buffSize+1];
     int cyclicSize = atoi(argv[7]);
-    int bloomSize = atoi(argv[9]);
-    BloomList citizenFilters(bloomSize,3);
-    int dirCount[folders];
-    for (i=1;i<=folders;i++) {
+    bloomSize = atoi(argv[9]);
+    citizenFilters.initialize(bloomSize,HASH_NO);
+    int dirCount[paths];
+    //Initialize buffer,mutex,cond_var + Create threads
+    pthread_t* consumers = new pthread_t[threads];
+    initialize(&pool,cyclicSize);
+    pthread_mutex_init(&mtx,NULL);
+    pthread_cond_init(&notempty,NULL);
+    pthread_cond_init(&notfull,NULL);
+    //Count all country files
+    counter=0;
+    for (i=1; i<=paths; i++) {
         dirCount[i-1]=0;
         //Open the subdirectory
         if ((dir_ptr = opendir(folderNames[i-1].c_str())) == NULL) {
             cout << stderr << " cannot open " << folderNames[i-1] << endl;
         } else {
-            //Access each file and initiate data structures
             while ((direntp = readdir(dir_ptr)) != NULL) {
                 if (direntp->d_name[0] != '.') {
-                    filePath = folderNames[i-1] + "/" + direntp->d_name;
-                    countryFile.open(filePath.c_str());
-                    while(getline(countryFile,line))
-                    {
-                        isVaccinated = "";
-                        faultyRecord = false;
-                        counter = 0;
-                        start = 0;
-                        end = line.find(' ');
-                        while (end != -1){
-                            data = line.substr(start,end-start);
-                            switch (counter) {
-                                case 0:
-                                    id = atoi(data.c_str());
-                                    break;
-                                case 1:
-                                    name = data;
-                                    break;
-                                case 2:
-                                    name += ' ' + data;
-                                    break;
-                                case 3:
-                                    country = data;
-                                    if (countries.getInfo(country)==NULL){
-                                        countries.insertNode(country);
-                                        countries.increment();
-                                    }
-                                    break;
-                                case 4:
-                                    age = atoi(data.c_str());
-                                    break;
-                                case 5:
-                                    virus = data;
-                                    if (virusNames.getInfo(virus)==NULL){
-                                        virusNames.insertNode(virus);
-                                        virusNames.increment();
-                                    }
-                                    break;
-                                case 6:
-                                    isVaccinated = data;
-                                    break;
-                                default:
-                                    break;
-                            }
-                            start = end + 1;
-                            end = line.find(' ',start);
-                            counter++;
-                        }
-                        currRecord = citizenData.getEntry(id);
-                        if (currRecord != NULL){
-                            if (currRecord->getName() != name or *currRecord->getCountry()!=country or currRecord->getAge() != age){
-                                faultyRecord = true;
-                            }
-                        }
-                        if (isVaccinated == "NO" or faultyRecord){
-                            continue;
-                        }
-                        if (counter == 6){
-                            data = line.substr(start,end-start);
-                            if (data == "NO"){
-                                isVaccinated = data;
-                                date = "0-0-0000";
-                            }
-                        }
-                        if (counter == 7 and isVaccinated == "YES"){
-                            citizenFilters.addToFilter(virus,to_string(id));
-                            data = line.substr(start,end-start);
-                            date = data;
-                        }
-                        if (currRecord == NULL){
-                            currRecord = citizenData.insertElement(id,name,countries.getInfo(country),age);
-                        }
-                        if (citizenVaccines.getVaccinateInfo(currRecord->getId(),virus) == "-1"){
-                            citizenVaccines.insert(virus, isVaccinated, currRecord, date);
-                        }
-                    }
-                    countryFile.close();
+                    counter++;
                 }
                 dirCount[i-1]+=1;
             }
-            closedir(dir_ptr);
+        }
+        closedir(dir_ptr);
+    }
+    string fileNames[counter];
+    //Store all country files
+    counter=0;
+    for (i=1; i<=paths; i++) {
+        dirCount[i-1]=0;
+        //Open the subdirectory
+        if ((dir_ptr = opendir(folderNames[i-1].c_str())) == NULL) {
+            cout << stderr << " cannot open " << folderNames[i-1] << endl;
+        } else {
+            while ((direntp = readdir(dir_ptr)) != NULL) {
+                if (direntp->d_name[0] != '.') {
+                    fileNames[counter++] = folderNames[i-1]+"/"+direntp->d_name;
+                }
+                dirCount[i-1]+=1;
+            }
+        }
+        closedir(dir_ptr);
+    }
+    //Create consumer threads and produce as main thread
+    for (i=0;i<threads;i++){
+        if ((err = pthread_create(&consumers[i],NULL,consumer,NULL))){
+            perror2("pthread_create",err);
+            exit(11);
         }
     }
+    for (i=0;i<counter;i++){
+        place(&pool,fileNames[i]);
+        pthread_cond_signal(&notempty);
+    }
+//    //Read Files
+//    for (i=1; i <= paths; i++) {
+//        dirCount[i-1]=0;
+//        //Open the subdirectory
+//        if ((dir_ptr = opendir(folderNames[i-1].c_str())) == NULL) {
+//            cout << stderr << " cannot open " << folderNames[i-1] << endl;
+//        } else {
+//            //Access each file and initiate data structures
+//            while ((direntp = readdir(dir_ptr)) != NULL) {
+//                if (direntp->d_name[0] != '.') {
+//                    filePath = folderNames[i-1] + "/" + direntp->d_name;
+//                    countryFile.open(filePath.c_str());
+//                    while(getline(countryFile,line))
+//                    {
+//                        isVaccinated = "";
+//                        faultyRecord = false;
+//                        counter = 0;
+//                        start = 0;
+//                        end = line.find(' ');
+//                        while (end != -1){
+//                            data = line.substr(start,end-start);
+//                            switch (counter) {
+//                                case 0:
+//                                    id = atoi(data.c_str());
+//                                    break;
+//                                case 1:
+//                                    name = data;
+//                                    break;
+//                                case 2:
+//                                    name += ' ' + data;
+//                                    break;
+//                                case 3:
+//                                    country = data;
+//                                    if (countries.getInfo(country)==NULL){
+//                                        countries.insertNode(country);
+//                                        countries.increment();
+//                                    }
+//                                    break;
+//                                case 4:
+//                                    age = atoi(data.c_str());
+//                                    break;
+//                                case 5:
+//                                    virus = data;
+//                                    if (virusNames.getInfo(virus)==NULL){
+//                                        virusNames.insertNode(virus);
+//                                        virusNames.increment();
+//                                    }
+//                                    break;
+//                                case 6:
+//                                    isVaccinated = data;
+//                                    break;
+//                                default:
+//                                    break;
+//                            }
+//                            start = end + 1;
+//                            end = line.find(' ',start);
+//                            counter++;
+//                        }
+//                        currRecord = citizenData.getEntry(id);
+//                        if (currRecord != NULL){
+//                            if (currRecord->getName() != name or *currRecord->getCountry()!=country or currRecord->getAge() != age){
+//                                faultyRecord = true;
+//                            }
+//                        }
+//                        if (isVaccinated == "NO" or faultyRecord){
+//                            continue;
+//                        }
+//                        if (counter == 6){
+//                            data = line.substr(start,end-start);
+//                            if (data == "NO"){
+//                                isVaccinated = data;
+//                                date = "0-0-0000";
+//                            }
+//                        }
+//                        if (counter == 7 and isVaccinated == "YES"){
+//                            citizenFilters.addToFilter(virus,to_string(id));
+//                            data = line.substr(start,end-start);
+//                            date = data;
+//                        }
+//                        if (currRecord == NULL){
+//                            currRecord = citizenData.insertElement(id,name,countries.getInfo(country),age);
+//                        }
+//                        if (citizenVaccines.getVaccinateInfo(currRecord->getId(),virus) == "-1"){
+//                            citizenVaccines.insert(virus, isVaccinated, currRecord, date);
+//                        }
+//                    }
+//                    countryFile.close();
+//                }
+//                dirCount[i-1]+=1;
+//            }
+//            closedir(dir_ptr);
+//        }
+//    }
     length=virusNames.getCapacity();
     //Send amount of viruses found
     if ((write(newsock,&length,sizeof(int))) == -1) {
@@ -248,6 +328,8 @@ int main(int argc, char *argv[]){
         switch (sig_flag) {
             case 1:
                 sig_flag=0;
+                quit=true;
+                pthread_cond_broadcast(&notempty);
                 i=countries.getCapacity();
                 if (getcwd(currentDirectory, sizeof(currentDirectory)) != NULL){
                     strcat(currentDirectory,LOGFILE);
@@ -293,7 +375,7 @@ int main(int argc, char *argv[]){
                     }
                 }
                 found=0;
-                for(i=0;i<folders;i++){
+                for(i=0; i < paths; i++){
                     if (folderNames[i].find(answer) != std::string::npos) {
                         if ((dir_ptr = opendir(folderNames[i].c_str())) == NULL) {
                             cout << stderr << " cannot open " << folderNames[i] << endl;
@@ -409,9 +491,20 @@ int main(int argc, char *argv[]){
                 break;
         }
     }
+    for (i=0;i<threads;i++){
+        if ((err=pthread_join(consumers[i], NULL))){
+            perror2("pthread_join",err);
+            exit(12);
+        }
+    }
     cout << "Ending Process " << getpid() << "." << endl;
     close(sock);
     close(newsock);
+    pthread_cond_destroy(&notfull);
+    pthread_cond_destroy(&notempty);
+    pthread_mutex_destroy(&mtx);
+    destroy(&pool);
+    delete[] consumers;
 	return 0;
 }
 
@@ -428,4 +521,131 @@ void catchUSR1(int sig_no){
 void catchUSR2(int sig_no){
     cout << "@C USR2 CAUGHT with: " << sig_no << endl;
     sig_flag = 3;
+}
+
+void initialize(c_buffer* pool1,int cap){
+    pool1->size=cap;
+    pool1->data=new string[pool1->size];
+    pool1->start=0;
+    pool1->end=-1;
+    pool1->count=0;
+}
+
+void place(c_buffer* pool1,const string& path){
+    pthread_mutex_lock(&mtx);
+    while (pool1->count >= pool1->size){
+        pthread_cond_wait(&notfull,&mtx);
+    }
+    pool1->end= (pool1->end+1)%pool1->size;
+    pool1->data[pool1->end]=path;
+    pool1->count++;
+    pthread_mutex_unlock(&mtx);
+}
+
+const string& obtain(c_buffer* pool1){
+    while(pool1->count<=0){
+        pthread_cond_wait(&notempty,&mtx);
+        if (quit){
+            pthread_mutex_unlock(&mtx);
+            pthread_exit(NULL);
+        }
+    }
+    const string& path = pool1->data[pool1->start];
+    pool1->start=(pool1->start+1)%pool1->size;
+    pool1->count--;
+    return path;
+}
+
+void destroy(c_buffer* pool1){
+    delete[] pool1->data;
+}
+
+void* consumer(void* ptr){
+    int start,end,counter,id,age;
+    string line,filePath,name,country,virus,isVaccinated,date,data;
+    ifstream countryFile;
+    while (!quit){
+        pthread_mutex_lock(&mtx);
+        filePath=obtain(&pool);
+//        cout << filePath << endl;
+        countryFile.open(filePath.c_str());
+        while(getline(countryFile,line))
+        {
+            isVaccinated = "";
+            faultyRecord = false;
+            counter = 0;
+            start = 0;
+            end = line.find(' ');
+            while (end != -1){
+                data = line.substr(start,end-start);
+                switch (counter) {
+                    case 0:
+                        id = atoi(data.c_str());
+                        break;
+                    case 1:
+                        name = data;
+                        break;
+                    case 2:
+                        name += ' ' + data;
+                        break;
+                    case 3:
+                        country = data;
+                        if (countries.getInfo(country)==NULL){
+                            countries.insertNode(country);
+                            countries.increment();
+                        }
+                        break;
+                    case 4:
+                        age = atoi(data.c_str());
+                        break;
+                    case 5:
+                        virus = data;
+                        if (virusNames.getInfo(virus)==NULL){
+                            virusNames.insertNode(virus);
+                            virusNames.increment();
+                        }
+                        break;
+                    case 6:
+                        isVaccinated = data;
+                        break;
+                    default:
+                        break;
+                }
+                start=end+1;
+                end = line.find(' ',start);
+                counter++;
+            }
+            currRecord = citizenData.getEntry(id);
+            if (currRecord != NULL){
+                if (currRecord->getName() != name or *currRecord->getCountry()!=country or currRecord->getAge() != age){
+                    faultyRecord = true;
+                }
+            }
+            if (isVaccinated == "NO" or faultyRecord){
+                continue;
+            }
+            if (counter == 6){
+                data = line.substr(start,end-start);
+                if (data == "NO"){
+                    isVaccinated = data;
+                    date = "0-0-0000";
+                }
+            }
+            if (counter == 7 and isVaccinated == "YES"){
+                citizenFilters.addToFilter(virus,to_string(id));
+                data = line.substr(start,end-start);
+                date = data;
+            }
+            if (currRecord == NULL){
+                currRecord = citizenData.insertElement(id,name,countries.getInfo(country),age);
+            }
+            if (citizenVaccines.getVaccinateInfo(currRecord->getId(),virus) == "-1"){
+                citizenVaccines.insert(virus, isVaccinated, currRecord, date);
+            }
+        }
+        countryFile.close();
+        pthread_cond_signal(&notfull);
+        pthread_mutex_unlock(&mtx);
+    }
+    pthread_exit(NULL);
 }
