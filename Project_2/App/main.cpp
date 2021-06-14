@@ -391,7 +391,7 @@ int main(int argc,char* argv[]){
                 cout << "/travelRequest citizenID date countryFrom countryTo virusName" << endl;
                 cout << "/travelStats virusName date1 date2 [country]" << endl << "/addVaccinationRecords country" << endl;
                 cout << "/searchVaccinationStatus citizenID" << endl;
-                cout << "/quit" << endl;
+                cout << "/exit" << endl;
                 cout << "Caution: ID -> only numbers, date_format: 4-7-2020 and anything in [] -> optional" << endl;
             }
             else if (cmdi.getWord(0) == "/travelRequest"){
