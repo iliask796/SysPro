@@ -130,7 +130,7 @@ int main(int argc,char* argv[]){
         if (childpid == 0){
             cout << "Child #" << i+1 << ", process ID: " << getpid() << ", parent ID: " << getppid() << endl;
             if (getcwd(currentDirectory, sizeof(currentDirectory)) != NULL){
-                strcat(currentDirectory,"/Monitor");
+                strcat(currentDirectory,"/monitorServer");
             }
             arg = createArg(DirList.getList(i),to_string(port).c_str(),thread1,buff1,cyclic1,bloom1);
             retval = execvp(currentDirectory, arg);
