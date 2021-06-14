@@ -35,8 +35,8 @@ int main(int argc, char *argv[]){
     sigaction(SIGUSR1,&act2,NULL);
     sigaction(SIGUSR2,&act3,NULL);
     //Start necessary actions for Monitor
-    int port,sock,newsock,filedes,entriesNum,i,j,length,start,end,counter,id,age,loc,info[1],pos=0,neg=0;
-    string inputdir,subdir,line,filePath,name,country,virus,isVaccinated,date,data;
+    int port,sock,newsock,filedes,i,j,length,start,end,counter,id,age,loc,info[1],pos=0,neg=0;
+    string line,filePath,name,country,virus,isVaccinated,date,data;
     char currentDirectory[400];
     int* filter;
     ifstream countryFile;
@@ -91,48 +91,29 @@ int main(int argc, char *argv[]){
     }
     cout << "Accepted connection." << endl;
     //Set parameters given from main program
+    int folders = argc-10;
+    string folderNames[folders];
+    j=0;
+    for (i=10;i<argc;i++){
+        folderNames[j++].assign(argv[i]);
+    }
     int threads = atoi(argv[3]);
     int buffSize = atoi(argv[5]);
     char msgbuf[buffSize+1];
     int cyclicSize = atoi(argv[7]);
     int bloomSize = atoi(argv[9]);
     BloomList citizenFilters(bloomSize,3);
-    //Read input directory
-    if (read(newsock,msgbuf,buffSize) < 0) {
-        perror(" problem in reading ");
-        exit(6);
-    }
-    inputdir.assign(msgbuf);
-    //Read amount of folders that need to handle
-    if (read(newsock,msgbuf,sizeof(int)) < 0) {
-        perror(" problem in reading ");
-        exit(6);
-    }
-    entriesNum = *msgbuf;
-    int dirCount[entriesNum];
-    for (i=1;i<=entriesNum;i++) {
+    int dirCount[folders];
+    for (i=1;i<=folders;i++) {
         dirCount[i-1]=0;
-        //Ready country folder names
-        if (read(newsock, msgbuf, sizeof(int)) < 0) {
-            perror(" problem in reading ");
-            exit(6);
-        }
-        length = *msgbuf;
-        if (read(newsock,msgbuf,length) < 0) {
-            perror(" problem in reading ");
-            exit(6);
-        }
-        msgbuf[length] = '\0';
-        subdir.assign(msgbuf);
         //Open the subdirectory
-        subdir = inputdir + "/" + subdir;
-        if ((dir_ptr = opendir(subdir.c_str())) == NULL) {
-            cout << stderr << " cannot open " << subdir << endl;
+        if ((dir_ptr = opendir(folderNames[i-1].c_str())) == NULL) {
+            cout << stderr << " cannot open " << folderNames[i-1] << endl;
         } else {
             //Access each file and initiate data structures
             while ((direntp = readdir(dir_ptr)) != NULL) {
                 if (direntp->d_name[0] != '.') {
-                    filePath = subdir + "/" + direntp->d_name;
+                    filePath = folderNames[i-1] + "/" + direntp->d_name;
                     countryFile.open(filePath.c_str());
                     while(getline(countryFile,line))
                     {
@@ -312,13 +293,16 @@ int main(int argc, char *argv[]){
                     }
                 }
                 found=0;
-                subdir = inputdir + "/" + answer;
-                if ((dir_ptr = opendir(subdir.c_str())) == NULL) {
-                    cout << stderr << " cannot open " << subdir << endl;
-                }
-                else {
-                    while ((direntp = readdir(dir_ptr)) != NULL) {
-                        found++;
+                for(i=0;i<folders;i++){
+                    if (folderNames[i].find(answer) != std::string::npos) {
+                        if ((dir_ptr = opendir(folderNames[i].c_str())) == NULL) {
+                            cout << stderr << " cannot open " << folderNames[i] << endl;
+                        }
+                        else {
+                            while ((direntp = readdir(dir_ptr)) != NULL) {
+                                found++;
+                            }
+                        }
                     }
                 }
                 cout << "Found " << found-dirCount[i-1] << " new file(s)." << endl;

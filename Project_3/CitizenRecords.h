@@ -67,6 +67,7 @@ public:
     void insertNode(const string&);
     string getEntry(int);
     string* getInfo(const string&);
+    string* getArg(int);
     void increment();
     int getCapacity();
     ~InfoList();
@@ -84,5 +85,8 @@ public:
     string getEntry(int,int);
     int getInfo(const string&);
     string* getCountryInfo(const string&);
+    InfoList* getList(int);
     ~InfoTable();
 };
+
+char** createArg(InfoList*,const char*,const char*,const char*,const char*,const char*);

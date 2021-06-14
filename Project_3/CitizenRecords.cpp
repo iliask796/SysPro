@@ -178,6 +178,18 @@ string* InfoList::getInfo(const string& s1) {
     return NULL;
 }
 
+string* InfoList::getArg(int place){
+    if (place>entriesNum or place<=0){
+        return NULL;
+    }
+    InfoNode* tmp = head;
+    while (place!=1){
+        tmp = tmp->next;
+        place--;
+    }
+    return &(tmp->info);
+}
+
 void InfoList::increment() {
     entriesNum++;
 }
@@ -257,6 +269,38 @@ string* InfoTable::getCountryInfo(const string& s1) {
     return NULL;
 }
 
+InfoList* InfoTable::getList(int pNum) {
+    for (int i=0;i<tableSize;i++){
+        if (table[i].processNum == pNum){
+            return &table[i];
+        }
+    }
+    return NULL;
+}
+
 InfoTable::~InfoTable() {
     delete[] table;
+}
+
+#include <cstring>
+
+char** createArg(InfoList* list,const char* port,const char* threads,const char* buffer,const char* cyclicb,const char* bloom){
+    int i, iter = 1;
+    int capacity = list->getCapacity()+11;
+    char** arg = new char*[capacity];
+    arg[0] = (char*)"-p";
+    arg[2] = (char*)"-t";
+    arg[4] = (char*)"-b";
+    arg[6] = (char*)"-c";
+    arg[8] = (char*)"-s";
+    arg[1] = (char*)port;
+    arg[3] = (char*)threads;
+    arg[5] = (char*)buffer;
+    arg[7] = (char*)cyclicb;
+    arg[9] = (char*)bloom;
+    arg[capacity] = NULL;
+    for (i=10;i<capacity-1;i++){
+        arg[i] = (char*)list->getArg(iter++)->c_str();
+    }
+    return arg;
 }

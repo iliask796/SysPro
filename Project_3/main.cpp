@@ -13,7 +13,7 @@
 #include "TravelRecords.h"
 using namespace std;
 
-#define PORT 6890
+#define PORT 6909
 #define LOGFILE "/log_file."
 #define FILEPERMS 0644
 
@@ -74,6 +74,25 @@ int main(int argc,char* argv[]){
     for (i=0;i<monitors;i++){
         citizenFilter[i] = new BloomList(bloomSize,3);
     }
+    //Store folder names and divide them for each process
+    if ((dir_ptr = opendir(dirname)) == NULL ) {
+        cout << stderr << " cannot open " << dirname << endl;
+    }
+    else {
+        i = 0;
+        while ((direntp = readdir(dir_ptr)) != NULL) {
+            if (direntp->d_name[0] != '.') {
+                strcpy(msgbuf, dirname);
+                strcat(msgbuf, "/");
+                strcat(msgbuf, direntp->d_name);
+                DirList.insertNode(i, msgbuf);
+                if (++i == monitors) {
+                    i = 0;
+                }
+            }
+        }
+        closedir(dir_ptr);
+    }
     //Make a socket for each process
     for(i=0;i<monitors;i++){
         if ((SOCKET[i]=socket(AF_INET,SOCK_STREAM,0)) <0){
@@ -99,8 +118,8 @@ int main(int argc,char* argv[]){
     const char* bloom1 = to_string(bloomSize).c_str();
     for (i=0;i<monitors;i++){
         port = PORT+i;
-        const char* port1 = to_string(port).c_str();
         server.sin_port = htons(port);
+        const char* port1 = to_string(port).c_str();
         childpid = fork();
         if (childpid == -1){
             perror("fork");
@@ -111,12 +130,14 @@ int main(int argc,char* argv[]){
             if (getcwd(currentDirectory, sizeof(currentDirectory)) != NULL){
                 strcat(currentDirectory,"/Monitor");
             }
-            retval = execlp(currentDirectory, "-p", port1, "-t", thread1, "-b", buff1, "-c", cyclic1, "-s", bloom1, NULL);
+            char** arg = createArg(DirList.getList(i),port1,thread1,buff1,cyclic1,bloom1);
+            retval = execvp(currentDirectory, arg);
             if(retval == -1) {
-                perror("execl");
+                perror("execvp");
                 exit(4);
             }
             exit(0);
+            delete[] arg;
         }
         pid[i]=childpid;
         sleep(3);
@@ -125,97 +146,56 @@ int main(int argc,char* argv[]){
             exit(4);
         }
     }
-    //Store folder names and divide them for each process
-    if ((dir_ptr = opendir(dirname)) == NULL ) {
-        cout << stderr << " cannot open " << dirname << endl;
-    }
-    else {
-        i=0;
-        while ((direntp = readdir(dir_ptr)) != NULL ){
-            if (direntp->d_name[0] != '.'){
-                strcpy(msgbuf,direntp->d_name);
-                DirList.insertNode(i,msgbuf);
-                if (++i == monitors){
-                    i=0;
-                }
-            }
+    sleep(2);
+    //Read filters
+    for (i=0;i<monitors;i++){
+        if (read(SOCKET[i],msgbuf,sizeof(int)) < 0) {
+            perror(" problem in reading ");
+            exit(6);
         }
-        closedir(dir_ptr);
-        //Transfer directory names over pipes
-        for (i=0;i<monitors;i++){
-            count = DirList.getCapacity(i);
-            if ((write(SOCKET[i],dirname,buffSize)) == -1) {
-                perror("Error in Writing");
-                exit(5);
-            }
-            if ((write(SOCKET[i],&count,sizeof(int))) == -1) {
-                perror("Error in Writing");
-                exit(5);
-            }
-            for (j=1;j<=count;j++){
-                country = DirList.getEntry(i,j);
-                length=country.size();
-                if ((write(SOCKET[i],&length,sizeof(int))) == -1) {
-                    perror("Error in Writing");
-                    exit(5);
-                }
-                if ((write(SOCKET[i],country.c_str(),length)) == -1) {
-                    perror("Error in Writing");
-                    exit(5);
-                }
-            }
-        }
-        sleep(2);
-        //Read filters
-        for (i=0;i<monitors;i++){
+        count=*msgbuf;
+        for (j=0;j<count;j++){
             if (read(SOCKET[i],msgbuf,sizeof(int)) < 0) {
                 perror(" problem in reading ");
                 exit(6);
             }
-            count=*msgbuf;
-            for (j=0;j<count;j++){
-                if (read(SOCKET[i],msgbuf,sizeof(int)) < 0) {
+            length=*msgbuf;
+            if (read(SOCKET[i],msgbuf,length) < 0) {
+                perror(" problem in reading ");
+                exit(6);
+            }
+            msgbuf[length]='\0';
+            virus.assign(msgbuf);
+            if (virusNames.getInfo(virus) == NULL) {
+                virusNames.insertNode(virus);
+                virusNames.increment();
+            }
+            int* filter = new int[bloomSize/sizeof(int)];
+            length=0;
+            loc=buffSize/sizeof(int);
+            while(length<bloomSize/buffSize){
+                if (read(SOCKET[i],msgbuf2,buffSize) < 0) {
                     perror(" problem in reading ");
                     exit(6);
                 }
-                length=*msgbuf;
-                if (read(SOCKET[i],msgbuf,length) < 0) {
-                    perror(" problem in reading ");
-                    exit(6);
+                for (k=0;k<loc;k++){
+                    filter[k+length*loc]=(msgbuf2[k]);
                 }
-                msgbuf[length]='\0';
-                virus.assign(msgbuf);
-                if (virusNames.getInfo(virus) == NULL) {
-                    virusNames.insertNode(virus);
-                    virusNames.increment();
-                }
-                int* filter = new int[bloomSize/sizeof(int)];
-                length=0;
-                loc=buffSize/sizeof(int);
-                while(length<bloomSize/buffSize){
-                    if (read(SOCKET[i],msgbuf2,buffSize) < 0) {
+                length++;
+                if(length==bloomSize/buffSize and bloomSize%buffSize>0){
+                    if (read(SOCKET[i],msgbuf2,bloomSize%buffSize) < 0) {
                         perror(" problem in reading ");
                         exit(6);
                     }
                     for (k=0;k<loc;k++){
                         filter[k+length*loc]=(msgbuf2[k]);
-                    }
-                    length++;
-                    if(length==bloomSize/buffSize and bloomSize%buffSize>0){
-                        if (read(SOCKET[i],msgbuf2,bloomSize%buffSize) < 0) {
-                            perror(" problem in reading ");
-                            exit(6);
-                        }
-                        for (k=0;k<loc;k++){
-                            filter[k+length*loc]=(msgbuf2[k]);
-                            if(k==(bloomSize%buffSize)/sizeof(int)){
-                                break;
-                            }
+                        if(k==(bloomSize%buffSize)/sizeof(int)){
+                            break;
                         }
                     }
                 }
-                citizenFilter[i]->addFilter(virus,filter);
             }
+            citizenFilter[i]->addFilter(virus,filter);
         }
     }
     int ready;
@@ -418,7 +398,7 @@ int main(int argc,char* argv[]){
                     cout << "Error: Virus Not Found." << endl;
                     continue;
                 }
-                data=DirList.getInfo(cmdi.getWord(3));
+                data=DirList.getInfo(inputdir+"/"+cmdi.getWord(3));
                 if (data==-1){
                     cout << "Error: Country Not Found." << endl;
                     continue;
@@ -525,7 +505,7 @@ int main(int argc,char* argv[]){
                         cout << "REJECTED " << neg << endl;
                         break;
                     case 5:
-                        data=DirList.getInfo(cmdi.getWord(4));
+                        data=DirList.getInfo(inputdir+"/"+cmdi.getWord(4));
                         if (data==-1){
                             cout << "Error: Country Not Found." << endl;
                             break;
@@ -547,7 +527,7 @@ int main(int argc,char* argv[]){
                     cout << "Error: Arguments Mismatch. Type /help for more info." << endl;
                     continue;
                 }
-                data=DirList.getInfo(cmdi.getWord(1));
+                data=DirList.getInfo(inputdir+"/"+cmdi.getWord(1));
                 if (data==-1){
                     cout << "Error: Country Not Found." << endl;
                     continue;
